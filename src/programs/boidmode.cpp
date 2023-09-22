@@ -1,7 +1,5 @@
 #include "boidmode.h"
 
-
-
 int BoidMode::init()
 {   
 
@@ -239,7 +237,7 @@ void *BoidMode::update_boids(void* arg)
 {
     while (true)
     {
-        pthread_testcancel();
+        //pthread_testcancel();
         boid *boids = boids;
         if (threadStatus == 1)
         {
@@ -305,8 +303,8 @@ int BoidMode::update(float deltaTime)
 
 int BoidMode::destroy()
 {
-    pthread_cancel(thread);
-    pthread_join(thread, NULL);
+    //pthread_cancel(thread);
+    //pthread_join(thread, NULL);
     threadStatus = 0;
     for (int i = 0; i < amount; i++)
     {   

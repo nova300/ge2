@@ -7,6 +7,8 @@
 #include "systems.h"
 #include <string.h>
 
+#include "boidmode.h"
+
 double appTime = 0;
 double deltaTime = 0;
 
@@ -52,7 +54,7 @@ int main(void)
 
     program_init();
 
-    //program_push(program_get_selftest());
+    program_push(new BoidMode());
 
     while (exitLoop == 0)
     {

@@ -8,7 +8,7 @@
 #include "systems.h"
 
 //#include "thread.h"
-#include <pthread.h>
+//#include <pthread.h>
 //#include <stdatomic.h>
 
 struct boid
