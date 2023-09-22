@@ -1,13 +1,6 @@
 #ifndef systems_h
 #define systems_h
 
-
-typedef int (*functionPointer)();
-typedef int (*functionPointerFloat)(float);
-typedef int (*functionPointerInt)(int);
-typedef int (*functionPointerDoubleDouble)(double, double);
-typedef int (*functionPointerIntInt)(int, int);
-
 /* TASKS */
 
 int run_script(void* num);
@@ -29,15 +22,17 @@ int task_queue(TaskHandle *task);
 
 /* PROGRAMS */
 
-typedef struct
+
+class Program
 {
-    functionPointer init;
-    functionPointerFloat update;
-    functionPointer destroy;
-    functionPointerIntInt keyCallback;
-    functionPointerDoubleDouble mouseCallback;
-    functionPointerDoubleDouble scrollCallback;
-}Program;
+public:
+    virtual int init();
+    virtual int update(float deltaTime);
+    virtual int destroy();
+    virtual int keyCallback(int x, int y);
+    virtual int mouseCallback(double x, double y);
+    virtual int scrollCallback(double x, double y);
+};
 
 extern Program **programStack;
 extern int programCapacity;
@@ -51,35 +46,30 @@ int program_update(float deltaTime);
 Program *program_get(void);
 
 /* program prototypes */
-Program *program_get_testmode();
-Program *program_get_boidmode();
-Program *program_get_selftest();
+//Program *program_get_testmode();
+//Program *program_get_boidmode();
+//Program *program_get_selftest();
 
 /* BEHAVIOURS */
 
 #define MAXBEHAVIOURS 100
 
-typedef struct
+class Behaviour
 {
+public:
     /* -- base -- */
-    functionPointer add;
-    functionPointer remove;
+    void add();
+    void remove();
     char active;
     unsigned char type;
     /* -- instance -- */
-    functionPointerInt init;
-    functionPointerFloat update;
-    functionPointerInt destroy;
+    void init(int);
+    void update(float deltaTime);
+    void destroy(int);
     void *dataStore;
     unsigned int *entities;
     int instanceCount;
     int instanceTop;
-}Behaviour;
-
-typedef int (*functionPointerBehaviourPointer)(Behaviour*);
-
-int behaviour_init(void);
-int behaviour_update(float deltaTime);
-Behaviour *behaviour_get(int id);
+};
 
 #endif

@@ -10,7 +10,7 @@ int behaviourTop;
 
 int behaviourStatus[MAXBEHAVIOURS];
 int behaviourIndex[MAXBEHAVIOURS];
-functionPointerBehaviourPointer behaviourInitialVector[MAXBEHAVIOURS];
+Behaviour* behaviourInitialVector[MAXBEHAVIOURS];
 
 int behaviour_init()
 {
@@ -40,8 +40,8 @@ int behaviour_update(float deltatime)
     {
         Behaviour *b = behaviourVector + i;
         if (!b->active) continue;
-        if (b->update == NULL) continue;
-        b->update(deltatime);
+        //if (b->update == NULL) continue;
+        //b->update(deltatime);
     }
     return 1;
 }
@@ -52,7 +52,7 @@ Behaviour *behaviour_get(int id)
     if(behaviourIndex[id] == -1)
     {
         b = behaviour_get_next();
-        behaviourStatus[id] = behaviourInitialVector[id](b);
+        //behaviourStatus[id] = behaviourInitialVector[id](b);
         behaviourIndex[id] = behaviourTop;
     }
     else

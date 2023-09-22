@@ -110,7 +110,7 @@ int program_push(Program *program)
     }
     programTop++;
     programStack[programTop] = program;
-    if (program->init != NULL) program->init();
+    program->init();
     return programTop;
 }
 
@@ -118,7 +118,7 @@ int program_pop()
 {
     if (programTop == -1) return 0;
     Program *top = programStack[programTop];
-    if (top->destroy != NULL) top->destroy();
+    top->destroy();
     programStack[programTop] = NULL;
     programTop--;
     return programTop;
@@ -128,7 +128,7 @@ int program_update(float deltatime)
 {
     if(programTop == -1) return 1;
     Program *top = programStack[programTop];
-    if (top->update != NULL) return top->update(deltatime);
+    return top->update(deltatime);
     return 1;
 }
 

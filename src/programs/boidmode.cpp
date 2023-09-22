@@ -1,67 +1,8 @@
-#include "engine.h"
-#include "shaders.h"
-
-#include "term.h"
-#include "systems.h"
-
-//#include "thread.h"
-#include <pthread.h>
-#include <stdatomic.h>
+#include "boidmode.h"
 
 
-static Program *this = NULL;
 
-void boidprogram_key_input_poll(void);
-
-typedef struct Boid
-{
-    struct Boid **localBoidList;
-    int localBoidListAmount;
-    Transform transform;
-    vec4 direction;
-    float radius;
-    float steerSpeed;
-    float speed;
-    int texture;
-    int id;
-}boid;
-
-typedef struct
-{
-    GeoObject **rq;
-    RenderQueue renderQueue1;
-    float sensitivity;
-    float mspeed;
-    char firstMouse;
-    float lastX;
-    float lastY;
-    float yaw;
-    float pitch;
-    char captureMouse;
-    boid *boids;
-    Transform *transform;
-    int amount;
-    float speed;
-    float steerSpeed;
-    float radius;
-    float separationWeight;
-    float alignmentWeight;
-    char scrollmode;
-    vec4 zero;
-    GeoObject *gobj;
-    float fpstimer;
-    float fps;
-    int fpscounter;
-    pthread_t thread;
-    atomic_int threadStatus;
-}boidmode_localstorage;
-
-static boidmode_localstorage *localstorage;
-
-void *update_boids(void* arg);
-
-
-int boidprogram_init()
+int BoidMode::init()
 {   
 
     glfwSetWindowTitle(window, "boids");
@@ -71,23 +12,21 @@ int boidprogram_init()
 
     fb_load_bg("media/underwater2.png", true);
 
-    localstorage = malloc(sizeof(boidmode_localstorage));
-
-    localstorage->sensitivity = 0.1f;
-    localstorage->mspeed = 2.0f;
-    localstorage->firstMouse = true;
-    localstorage->lastX = SCREEN_WIDTH / 2;
-    localstorage->lastY = SCREEN_HEIGHT / 2;
-    localstorage->yaw = -90.0f;
-    localstorage->pitch = 0.0f;
-    localstorage->captureMouse = 0;
-    localstorage->separationWeight = 0.30;
-    localstorage->alignmentWeight = 0.145;
-    localstorage->scrollmode = 0;
-    localstorage->fpstimer = 0;
-    localstorage->fps = 999;
-    localstorage->fpscounter = 0;
-    localstorage->threadStatus = 0;
+    this->sensitivity = 0.1f;
+    this->mspeed = 2.0f;
+    this->firstMouse = true;
+    this->lastX = SCREEN_WIDTH / 2;
+    this->lastY = SCREEN_HEIGHT / 2;
+    this->yaw = -90.0f;
+    this->pitch = 0.0f;
+    this->captureMouse = 0;
+    this->separationWeight = 0.30;
+    this->alignmentWeight = 0.145;
+    this->scrollmode = 0;
+    this->fpstimer = 0;
+    this->fps = 999;
+    this->fpscounter = 0;
+    this->threadStatus = 0;
 
     vec4 eye = {{0, 0, 50, 0}};
     vec4 center = {{0, 0, -1, 0}};
@@ -95,57 +34,57 @@ int boidprogram_init()
     c_pos = eye;
     c_front = center;
 
-    pthread_create(&localstorage->thread, NULL, update_boids, NULL);
+    //pthread_create(&this->thread, NULL, update_boids, NULL);
 
-    localstorage->gobj = geo_new_object();
-    geo_obj_loadFromFile("media/cube.obj", localstorage->gobj);
+    this->gobj = geo_new_object();
+    geo_obj_loadFromFile("media/cube.obj", this->gobj);
 
-    rq_init(&localstorage->renderQueue1, 10);
+    rq_init(&this->renderQueue1, 10);
 
 
     Shader *s = newShaderObject(vertex_shader_0, fragment_shader_0);
-    localstorage->renderQueue1.gpuHandle.shader = s;
+    this->renderQueue1.gpuHandle.shader = s;
 
-    localstorage->rq = localstorage->renderQueue1.objectBuffer;
+    this->rq = this->renderQueue1.objectBuffer;
 
-    transform_set_identity(&localstorage->gobj->baseTransform);
+    transform_set_identity(&this->gobj->baseTransform);
 
-    localstorage->renderQueue1.gpuHandle.textureAtlas = generateRandomAtlas();
+    this->renderQueue1.gpuHandle.textureAtlas = generateRandomAtlas();
 
-    localstorage->gobj->baseTexture = 5;
+    this->gobj->baseTexture = 5;
 
-    rq_add_object(&localstorage->renderQueue1, localstorage->gobj);
+    rq_add_object(&this->renderQueue1, this->gobj);
 
     //p1 = particle_new(gobj, 100);
 
-    localstorage->amount = 2000;
+    this->amount = 2000;
 
-    int len = snprintf(NULL, 0, "%d", localstorage->amount);
-    char *result = malloc(len + 1);
-    snprintf(result, len + 1, "%d", localstorage->amount);
+    int len = snprintf(NULL, 0, "%d", this->amount);
+    char *result = (char*)malloc(len + 1);
+    snprintf(result, len + 1, "%d", this->amount);
     terminal_print(result);
     terminal_print(" boids\n");
     free(result);
 
-    localstorage->radius = 10.0f;
-    localstorage->steerSpeed = 0.01f;
-    localstorage->speed = 10.0f;
+    this->radius = 10.0f;
+    this->steerSpeed = 0.01f;
+    this->speed = 10.0f;
 
-    geo_instanceop_init(localstorage->gobj, localstorage->amount);
+    geo_instanceop_init(this->gobj, this->amount);
 
-    localstorage->transform = &(localstorage->gobj->baseTransform);
-    boid *b = malloc(sizeof(boid) * localstorage->amount);
+    this->transform = &(this->gobj->baseTransform);
+    boid *b = (boid*)malloc(sizeof(boid) * this->amount);
 
-    localstorage->zero.x = 0;
-    localstorage->zero.y = 0;
-    localstorage->zero.z = 0;
-    localstorage->zero.w = 0;
+    this->zero.x = 0;
+    this->zero.y = 0;
+    this->zero.z = 0;
+    this->zero.w = 0;
 
-    for (int i = 0; i < localstorage->amount; i++)
+    for (int i = 0; i < this->amount; i++)
     {
-        b[i].radius = localstorage->radius;
-        b[i].speed = localstorage->speed;
-        b[i].steerSpeed = localstorage->steerSpeed;
+        b[i].radius = this->radius;
+        b[i].speed = this->speed;
+        b[i].steerSpeed = this->steerSpeed;
         b[i].direction.x = ((rand() - rand()) % 3) + ((rand() - rand()) % 10);
         b[i].direction.y = ((rand() - rand()) % 3) + ((rand() - rand()) % 10);
         b[i].direction.z = ((rand() - rand()) % 3) + ((rand() - rand()) % 10);
@@ -154,36 +93,36 @@ int boidprogram_init()
 
         transform_position(((rand() - rand()) % 3) + ((rand() - rand()) % 10), ((rand() - rand()) % 3) + ((rand() - rand()) % 10), ((rand() - rand()) % 3) + ((rand() - rand()) % 10), &b[i].transform);
         
-        b[i].localBoidList = malloc(sizeof(boid*) * 20);
+        b[i].localBoidList = (boid**)malloc(sizeof(boid*) * 20);
         b[i].localBoidListAmount = 0;
 
         b[i].id = i;
 
     }
     
-    localstorage->boids = b;
+    boids = b;
 }
 
-void updateLocalBoidList(boid *b)
+void BoidMode::updateLocalBoidList(boid *b)
 {
     b->localBoidListAmount = 0;
 
-    for (int i = 0; i < localstorage->amount; i++)
+    for (int i = 0; i < amount; i++)
     {
         if (b->localBoidListAmount == 20) break;
-        if (localstorage->boids[i].id == b->id) continue;
+        if (boids[i].id == b->id) continue;
 
-        if (vector_distance(b->transform.position, localstorage->boids[i].transform.position) < localstorage->radius)
+        if (vector_distance(b->transform.position, boids[i].transform.position) < radius)
         {
-            b->localBoidList[b->localBoidListAmount] = &localstorage->boids[i];
+            b->localBoidList[b->localBoidListAmount] = &boids[i];
             b->localBoidListAmount++;
         }
     }
 }
 
-void doCohesion(boid *b)
+void BoidMode::doCohesion(boid *b)
 {
-    vec4 avg = localstorage->zero;
+    vec4 avg = zero;
     if (b->localBoidListAmount == 0) return;
 
     for (int i = 0; i < b->localBoidListAmount; i++)
@@ -199,14 +138,14 @@ void doCohesion(boid *b)
 
     vector_normalize(&dir);
 
-    b->direction.x += dir.x * localstorage->steerSpeed;
-    b->direction.y += dir.y * localstorage->steerSpeed;
-    b->direction.z += dir.z * localstorage->steerSpeed;
+    b->direction.x += dir.x * steerSpeed;
+    b->direction.y += dir.y * steerSpeed;
+    b->direction.z += dir.z * steerSpeed;
 }
 
-void doAlignment(boid *b)
+void BoidMode::doAlignment(boid *b)
 {
-    vec4 avg = localstorage->zero;
+    vec4 avg = zero;
     if (b->localBoidListAmount == 0) return;
 
     for (int i = 0; i < b->localBoidListAmount; i++)
@@ -218,19 +157,19 @@ void doAlignment(boid *b)
     avg.y = avg.y / b->localBoidListAmount;
     avg.z = avg.z / b->localBoidListAmount;
 
-    float alignSpeed = localstorage->steerSpeed * localstorage->alignmentWeight;
+    float alignSpeed = steerSpeed * alignmentWeight;
 
     b->direction.x += avg.x * alignSpeed;
     b->direction.y += avg.y * alignSpeed;
     b->direction.z += avg.z * alignSpeed;
 }
 
-void doSeperation(boid *b)
+void BoidMode::doSeperation(boid *b)
 {
-    float sepRad = localstorage->radius * 0.8f;
+    float sepRad = radius * 0.8f;
     //boid *closeBoids[50];
     int closeBoidsAmount = 0;
-    vec4 avg = localstorage->zero;
+    vec4 avg = zero;
     
     for (int i = 0; i < b->localBoidListAmount; i++)
     {
@@ -271,122 +210,117 @@ void doSeperation(boid *b)
 
     vec4 dir = vector_subtract(avg, b->transform.position);
 
-    float separationSpeed = localstorage->steerSpeed * localstorage->separationWeight;
+    float separationSpeed = steerSpeed * separationWeight;
 
     b->direction.x -= dir.x * separationSpeed;
     b->direction.y -= dir.y * separationSpeed;
     b->direction.z -= dir.z * separationSpeed;
 }
 
-void doRetention(boid *b)
+void BoidMode::doRetention(boid *b)
 {
     float retentionDist = 40.0f;
-    if (vector_distance(localstorage->transform->position, b->transform.position) > (retentionDist * 2))
+    if (vector_distance(transform->position, b->transform.position) > (retentionDist * 2))
     {
         transform_position(0.0f, 0.0f, 0.0f, &b->transform);
     }
 
-    if (vector_distance(localstorage->transform->position, b->transform.position) > retentionDist)
+    if (vector_distance(transform->position, b->transform.position) > retentionDist)
     {
-        vec4 dir = vector_subtract(b->transform.position, localstorage->transform->position);
+        vec4 dir = vector_subtract(b->transform.position, transform->position);
 
-        b->direction.x -= dir.x * localstorage->steerSpeed * 2;
-        b->direction.y -= dir.y * localstorage->steerSpeed * 2;
-        b->direction.z -= dir.z * localstorage->steerSpeed * 2;
+        b->direction.x -= dir.x * steerSpeed * 2;
+        b->direction.y -= dir.y * steerSpeed * 2;
+        b->direction.z -= dir.z * steerSpeed * 2;
     }
 }
 
-void *update_boids(void* arg)
+void *BoidMode::update_boids(void* arg)
 {
     while (true)
     {
         pthread_testcancel();
-        boid *boids = localstorage->boids;
-        if (localstorage->threadStatus == 1)
+        boid *boids = boids;
+        if (threadStatus == 1)
         {
             int i;
             #pragma omp parallel for
-            for (i = 0; i < localstorage->amount; i++)
+            for (i = 0; i < amount; i++)
             {
-                updateLocalBoidList(&localstorage->boids[i]);
+                updateLocalBoidList(&boids[i]);
                 doAlignment(&boids[i]);
                 doCohesion(&boids[i]);
                 doSeperation(&boids[i]);
                 doRetention(&boids[i]);
                 vector_normalize(&boids[i].direction);
-                transform_move(boids[i].direction.x * (deltaTime * localstorage->speed), boids[i].direction.y * (deltaTime * localstorage->speed), boids[i].direction.z * (deltaTime * localstorage->speed), &boids[i].transform);
+                transform_move(boids[i].direction.x * (deltaTime * speed), boids[i].direction.y * (deltaTime * speed), boids[i].direction.z * (deltaTime * speed), &boids[i].transform);
                 transform_set_rotation(boids[i].direction.x, boids[i].direction.y, boids[i].direction.z, &boids[i].transform);
                 transform_make_matrix(&boids[i].transform);
             }
-            localstorage->threadStatus = 0;
+            threadStatus = 0;
         }
     }
 }
 
-int boidprogram_update(float deltaTime)
+int BoidMode::update(float deltaTime)
 {
-    if (localstorage == NULL) return 0;
-    boidprogram_key_input_poll();
+    key_input_poll();
 
-    if (localstorage->threadStatus == 0)
+    if (this->threadStatus == 0)
     {
         
-        geo_instanceop_clear(localstorage->gobj);
-        for (int i = 0; i < localstorage->amount; i++)
+        geo_instanceop_clear(this->gobj);
+        for (int i = 0; i < this->amount; i++)
         {
-            geo_instanceop_add(localstorage->gobj, localstorage->boids[i].transform.matrix, localstorage->boids[i].texture);
+            geo_instanceop_add(this->gobj, this->boids[i].transform.matrix, this->boids[i].texture);
         }
-        rq_update_buffers(&localstorage->renderQueue1);
+        rq_update_buffers(&this->renderQueue1);
 
-        localstorage->threadStatus = 1;
+        this->threadStatus = 1;
 
     }
 
-    geo_render(&localstorage->renderQueue1.gpuHandle);
+    geo_render(&this->renderQueue1.gpuHandle);
 
 
 
-    if (localstorage->fpstimer > 1)
+    if (fpstimer > 1)
     {
-        localstorage->fps = localstorage->fpstimer / localstorage->fpscounter;
-        localstorage->fps = 1 / localstorage->fps;
-        localstorage->fpscounter = 0;
-        localstorage->fpstimer = 0;
+        fps = fpstimer / fpscounter;
+        fps = 1 / fps;
+        fpscounter = 0;
+        fpstimer = 0;
     }
     else
     {
-        localstorage->fpstimer = localstorage->fpstimer + deltaTime;
-        localstorage->fpscounter++;
+        fpstimer = fpstimer + deltaTime;
+        fpscounter++;
     }
-    int len = snprintf(NULL, 0, "%3.0f", localstorage->fps);
-    char *result = malloc(len + 1);
-    snprintf(result, len + 1, "%3.0f", localstorage->fps);
+    int len = snprintf(NULL, 0, "%3.0f", fps);
+    char *result = (char*)malloc(len + 1);
+    snprintf(result, len + 1, "%3.0f", fps);
     terminal_display(result);
     free(result);
 }
 
-int boidprogram_destroy()
+int BoidMode::destroy()
 {
-    pthread_cancel(localstorage->thread);
-    pthread_join(localstorage->thread, NULL);
-    localstorage->threadStatus = 0;
-    for (int i = 0; i < localstorage->amount; i++)
+    pthread_cancel(thread);
+    pthread_join(thread, NULL);
+    threadStatus = 0;
+    for (int i = 0; i < amount; i++)
     {   
-        free(localstorage->boids[i].localBoidList);
+        free(boids[i].localBoidList);
     }
-    rq_free(&localstorage->renderQueue1);
-    freeShaderObject(localstorage->renderQueue1.gpuHandle.shader);
-    glDeleteTextures(1, &localstorage->renderQueue1.gpuHandle.textureAtlas);
-    geo_instanceop_free(localstorage->gobj);
-    geo_obj_free(localstorage->gobj);
-    free(this);
-    free(localstorage->boids);
-    free(localstorage);
-    this = NULL;
-    localstorage == NULL;
+    rq_free(&renderQueue1);
+    freeShaderObject(renderQueue1.gpuHandle.shader);
+    glDeleteTextures(1, &renderQueue1.gpuHandle.textureAtlas);
+    geo_instanceop_free(gobj);
+    geo_obj_free(gobj);
+    free(boids);
 }
 
-int boidprogram_keyCallback(int key, int action)
+int BoidMode::keyCallback(int key, int action)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
@@ -394,54 +328,54 @@ int boidprogram_keyCallback(int key, int action)
     }
     if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
     {
-       for (int i = 0; i < localstorage->amount; i++)
+       for (int i = 0; i < amount; i++)
         {
-            transform_position(((rand() - rand()) % 30) + ((rand() - rand()) % 100), ((rand() - rand()) % 30) + ((rand() - rand()) % 100), ((rand() - rand()) % 30) + ((rand() - rand()) % 100), &localstorage->boids[i].transform);
+            transform_position(((rand() - rand()) % 30) + ((rand() - rand()) % 100), ((rand() - rand()) % 30) + ((rand() - rand()) % 100), ((rand() - rand()) % 30) + ((rand() - rand()) % 100), &boids[i].transform);
         } 
         terminal_clear();
         terminal_print("reset simulation\n");
     }
 }
 
-int boidprogram_mouseCallback(double xpos, double ypos)
+int BoidMode::mouseCallback(double xpos, double ypos)
 {
-    if (!localstorage->captureMouse)
+    if (!captureMouse)
     {
-        return 0;
+        return 1;
     }
-    if (localstorage->firstMouse)
+    if (firstMouse)
     {
-        localstorage->lastX = xpos;
-        localstorage->lastY = ypos;
-        localstorage->firstMouse = false;
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
     }
   
-    float xoffset = xpos - localstorage->lastX;
-    float yoffset = localstorage->lastY - ypos; 
-    localstorage->lastX = xpos;
-    localstorage->lastY = ypos;
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; 
+    lastX = xpos;
+    lastY = ypos;
 
-    xoffset *= localstorage->sensitivity;
-    yoffset *= localstorage->sensitivity;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
 
-    localstorage->yaw += xoffset;
-    localstorage->pitch += yoffset;
+    yaw += xoffset;
+    pitch += yoffset;
 
-    if(localstorage->pitch > 89.0f) localstorage->pitch = 89.0f;
-    if(localstorage->pitch < -89.0f) localstorage->pitch = -89.0f;
+    if(pitch > 89.0f) pitch = 89.0f;
+    if(pitch < -89.0f) pitch = -89.0f;
 
     vec4 direction;
-    direction.x = cos(radians(localstorage->yaw)) * cos(radians(localstorage->pitch));
-    direction.y = sin(radians(localstorage->pitch));
-    direction.z = sin(radians(localstorage->yaw)) * cos(radians(localstorage->pitch));
+    direction.x = cos(radians(yaw)) * cos(radians(pitch));
+    direction.y = sin(radians(pitch));
+    direction.z = sin(radians(yaw)) * cos(radians(pitch));
     direction.w = 0;
     vector_normalize(&direction);
     c_front = direction;
 }
 
-int boidprogram_scrollCallback(double xoffset, double yoffset)
+int BoidMode::scrollCallback(double xoffset, double yoffset)
 {
-    if (localstorage->scrollmode == 0)
+    if (scrollmode == 0)
     {
         fov = fov - (yoffset * 10);
         if (fov < 1.0f)
@@ -449,24 +383,24 @@ int boidprogram_scrollCallback(double xoffset, double yoffset)
         if (fov > 120.0f)
         fov = 120.0f;
         projectionMatrix = matrix_perspective(radians(fov), (float)s_width / s_height, 0.1f, 100.0f);
-        return 0;
+        return 1;
     }
-    if (localstorage->scrollmode == 1)
+    if (scrollmode == 1)
     {
-        localstorage->alignmentWeight += (yoffset * 0.01f);
-        printf("alignment weight: %f\n", localstorage->alignmentWeight);
+        alignmentWeight += (yoffset * 0.01f);
+        printf("alignment weight: %f\n", alignmentWeight);
     }
 
-    if (localstorage->scrollmode == 2)
+    if (scrollmode == 2)
     {
-        localstorage->separationWeight += (yoffset * 0.01f);
-        printf("separation weight: %f\n", localstorage->separationWeight);
+        separationWeight += (yoffset * 0.01f);
+        printf("separation weight: %f\n", separationWeight);
     }
 }
 
-void boidprogram_key_input_poll(void)
+void BoidMode::key_input_poll(void)
 {
-    float c_speed = localstorage->mspeed * deltaTime;
+    float c_speed = mspeed * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
         c_speed = c_speed * 2;
@@ -495,35 +429,18 @@ void boidprogram_key_input_poll(void)
 
     if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS)
     {
-        localstorage->scrollmode = 0;
+        scrollmode = 0;
     }
     if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS)
     {
-        localstorage->scrollmode = 1;
+        scrollmode = 1;
     }
     if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS)
     {
-        localstorage->scrollmode = 2;
+        scrollmode = 2;
     }
     if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS)
     {
-        localstorage->scrollmode = 3;
+        scrollmode = 3;
     }
-}
-
-
-Program *program_get_boidmode()
-{
-    if (this != NULL) return this;
-    this = malloc(sizeof(Program));
-
-    this->init = boidprogram_init;
-    this->update = boidprogram_update;
-    this->destroy = boidprogram_destroy;
-
-    this->keyCallback = boidprogram_keyCallback;
-    this->mouseCallback = boidprogram_mouseCallback;
-    this->scrollCallback = boidprogram_scrollCallback;
-
-    return this;
 }
