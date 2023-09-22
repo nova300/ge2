@@ -166,7 +166,7 @@ int get_top_left_tile_idx()
 
 vertex *make_skybox_rect(int tileIndex, int *indicies)
 {
-    vertex *verts = malloc(4 * sizeof(vertex));
+    vertex *verts = (vertex*)malloc(4 * sizeof(vertex));
     int x = tileIndex % SKYBOX_COLS * SKYBOX_TILE_WIDTH;
     int y = SKYBOX_HEIGHT - tileIndex / SKYBOX_COLS * SKYBOX_TILE_HEIGHT;
 
@@ -229,7 +229,7 @@ void render_skybox()
         {
             int tileIndex = skyboxinfo.upperLeftIndex + (row * SKYBOX_COLS) + col;
 
-            int *indicies = malloc(sizeof(int) * 6);
+            int *indicies = (int*)malloc(sizeof(int) * 6);
             indicies[0] = 0;
             indicies[1] = 1;
             indicies[2] = 2;
@@ -237,7 +237,7 @@ void render_skybox()
             indicies[4] = 2;
             indicies[5] = 0;
             vertex *vertices = make_skybox_rect(tileIndex, indicies);
-            int *texture = malloc(sizeof(int));
+            int *texture = (int*)malloc(sizeof(int));
 
 
             int texIndex = tileIndex - (2 * (int)(tileIndex / 10));

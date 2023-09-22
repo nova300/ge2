@@ -9,8 +9,8 @@ int term_font_y;
 
 float timer = 0;
 
-unsigned char* buffer = NULL;
-unsigned char* framebuffer = NULL;
+char* buffer = NULL;
+char* framebuffer = NULL;
 
 int cursorpos = 0;
 int buffpos = 0;
@@ -36,7 +36,7 @@ int terminal_render()
 
     if (framebuffer == NULL)
     {
-        framebuffer = malloc(bufsize);
+        framebuffer = (char*)malloc(bufsize);
 
         for (int i = 0; i < bufsize; i++)
         {
@@ -117,12 +117,12 @@ int terminal_print(const char* str)
     int len = strlen(str);
     if (buffer == NULL)
     {
-        buffer = malloc(32);
+        buffer = (char*)malloc(32);
         buffalloc = 32;
     }
     if (bufflen + len >= buffalloc)
     {
-        buffer = realloc(buffer, buffalloc + 32 + len);
+        buffer = (char*)realloc(buffer, buffalloc + 32 + len);
         buffalloc += 32 + len;
         //printf("allocated %i bytes\n", buffalloc);
     }
@@ -155,9 +155,9 @@ void terminal_clear()
 void terminal_init()
 {
     int comp;
-    term_font = (vec4*)stbi_loadf_from_memory(&font_data, font_len, &term_font_x, &term_font_y, &comp, STBI_rgb_alpha);
+    term_font = (vec4*)stbi_loadf_from_memory((const unsigned char*)&font_data, font_len, &term_font_x, &term_font_y, &comp, STBI_rgb_alpha);
 
-    framebuffer = malloc(bufsize);
+    framebuffer = (char*)malloc(bufsize);
     for (int i = 0; i < bufsize; i++)
     {
         framebuffer[i] = rand();

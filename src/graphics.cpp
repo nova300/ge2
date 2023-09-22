@@ -578,8 +578,8 @@ void rq_update_buffers(RenderQueue *rq)
             vertexCount += obj[i]->dataCount;
         }
 
-        int *indicies = malloc(indexCount * sizeof(int));
-        vertex *vertices = malloc(vertexCount * sizeof(vertex));
+        int *indicies = (int*)malloc(indexCount * sizeof(int));
+        vertex *vertices = (vertex*)malloc(vertexCount * sizeof(vertex));
         int vertex_offset = 0;
         int index_offset = 0;
         for (i = 0; i < count; i++) 
@@ -610,8 +610,8 @@ void rq_update_buffers(RenderQueue *rq)
         {
             instanceCount += obj[i]->instanceCount;
         }
-        int *textures = malloc(sizeof(int) * instanceCount);
-        mat4 *transforms = malloc(sizeof(mat4) * instanceCount);
+        int *textures = (int*)malloc(sizeof(int) * instanceCount);
+        mat4 *transforms = (mat4*)malloc(sizeof(mat4) * instanceCount);
         int instance_offset = 0;
         for (i = 0; i < count; i++)
         {
@@ -634,7 +634,7 @@ void rq_update_buffers(RenderQueue *rq)
 
     if (commandsNeedUpdate)
     {
-        drawCommand *commands = malloc(sizeof(drawCommand) * count);
+        drawCommand *commands = (drawCommand*)malloc(sizeof(drawCommand) * count);
         int baseVert = 0;
         int fIndex = 0;
         int baseInst = 0;
@@ -704,7 +704,7 @@ void geo_obj_gpu_update_buffers(GeoObject_gpu *gobj)
 
 RenderQueue *rq_new_queue(int capacity)
 {
-    RenderQueue *rq = malloc(sizeof(RenderQueue));
+    RenderQueue *rq = (RenderQueue*)malloc(sizeof(RenderQueue));
     rq_init(rq, capacity);
 }
 
@@ -712,7 +712,7 @@ void rq_init(RenderQueue *rq, int capacity)
 {
     rq->capacity = capacity;
     GeoObject **buf;
-    buf = malloc(sizeof(*buf) * capacity);
+    buf = (GeoObject**)malloc(sizeof(*buf) * capacity);
     rq->objectBuffer = buf;
     rq->count = 0;
 
@@ -723,7 +723,7 @@ void rq_init_c(RenderQueue *rq, int capacity)
 {
     rq->capacity = capacity;
     GeoObject **buf;
-    buf = malloc(sizeof(*buf) * capacity);
+    buf = (GeoObject**)malloc(sizeof(*buf) * capacity);
     rq->objectBuffer = buf;
     rq->count = 0;
 

@@ -21,19 +21,19 @@ int geo_obj_loadFromFile(const char* filename, GeoObject *obj)
         return 1;
     }
 
-    vec3 *vBuffer = malloc(sizeof(vec3) * 128);
+    vec3 *vBuffer = (vec3*)malloc(sizeof(vec3) * 128);
     int vBuffLen = 128;
     int vCount = 0;
-    vec2 *vtBuffer = malloc(sizeof(vec2) * 128);
+    vec2 *vtBuffer = (vec2*)malloc(sizeof(vec2) * 128);
     int vtBuffLen = 128;
     int vtCount = 0;
-    vec3 *vnBuffer = malloc(sizeof(vec3) * 128);
+    vec3 *vnBuffer = (vec3*)malloc(sizeof(vec3) * 128);
     int vnBuffLen = 128;
     int vnCount = 0;
 
-    vec3int *vertexIndices = malloc(sizeof(vec3int) * 128);
-    vec3int *uvIndices = malloc(sizeof(vec3int) * 128);
-    vec3int *normalIndices = malloc(sizeof(vec3int) * 128);
+    vec3int *vertexIndices = (vec3int*)malloc(sizeof(vec3int) * 128);
+    vec3int *uvIndices = (vec3int*)malloc(sizeof(vec3int) * 128);
+    vec3int *normalIndices = (vec3int*)malloc(sizeof(vec3int) * 128);
     int iAlloc = 128;
     int iCount = 0;
 
@@ -54,7 +54,7 @@ int geo_obj_loadFromFile(const char* filename, GeoObject *obj)
             if (vCount == vBuffLen)
             {
                 printf("v: %d\n", vCount);
-                vBuffer = realloc(vBuffer, sizeof(vec3) * (vBuffLen + 128));
+                vBuffer = (vec3*)realloc(vBuffer, sizeof(vec3) * (vBuffLen + 128));
                 vBuffLen = vBuffLen + 128;
             }
             vBuffer[vCount].x = vertex.x;
@@ -69,7 +69,7 @@ int geo_obj_loadFromFile(const char* filename, GeoObject *obj)
             if (vtCount == vtBuffLen)
             {
                 printf("vt: %d\n", vtCount);
-                vtBuffer = realloc(vtBuffer, sizeof(vec2) * (vtBuffLen + 128));
+                vtBuffer = (vec2*)realloc(vtBuffer, sizeof(vec2) * (vtBuffLen + 128));
                 vtBuffLen = vtBuffLen + 128;
             }
             vtBuffer[vtCount].x = uv.x;
@@ -83,7 +83,7 @@ int geo_obj_loadFromFile(const char* filename, GeoObject *obj)
             if (vnCount == vnBuffLen)
             {
                 printf("vn: %d\n", vnCount);
-                vnBuffer = realloc(vnBuffer, sizeof(vec3) * (vnBuffLen + 128));
+                vnBuffer = (vec3*)realloc(vnBuffer, sizeof(vec3) * (vnBuffLen + 128));
                 vnBuffLen = vnBuffLen + 128;
             }
             vnBuffer[vnCount].x = normal.x;
@@ -99,9 +99,9 @@ int geo_obj_loadFromFile(const char* filename, GeoObject *obj)
             if ((iCount + 1) == iAlloc)
             {
                 printf("i: %d\n", iCount);
-                vertexIndices = realloc(vertexIndices ,sizeof(vec3int) * (iAlloc + 128));
-                uvIndices = realloc(uvIndices , sizeof(vec3int) * (iAlloc + 128));
-                normalIndices = realloc(normalIndices ,sizeof(vec3int) * (iAlloc + 128));
+                vertexIndices = (vec3int*)realloc(vertexIndices ,sizeof(vec3int) * (iAlloc + 128));
+                uvIndices = (vec3int*)realloc(uvIndices , sizeof(vec3int) * (iAlloc + 128));
+                normalIndices = (vec3int*)realloc(normalIndices ,sizeof(vec3int) * (iAlloc + 128));
                 iAlloc = iAlloc + 128;
             }
             vertexIndices[iCount].x = vertexIndex[0];
@@ -123,9 +123,9 @@ int geo_obj_loadFromFile(const char* filename, GeoObject *obj)
 
     int bufferLength = sizeof(vec3) * vertCount;
     int triCount = (iCount - 1);
-    vec3 *vertexBuffer = malloc(sizeof(vec3) * vertCount);
-    vec2 *uvBuffer = malloc(sizeof(vec2) * vertCount);
-    vec3 *normalBuffer = malloc(sizeof(vec3) * vertCount);
+    vec3 *vertexBuffer = (vec3*)malloc(sizeof(vec3) * vertCount);
+    vec2 *uvBuffer = (vec2*)malloc(sizeof(vec2) * vertCount);
+    vec3 *normalBuffer = (vec3*)malloc(sizeof(vec3) * vertCount);
 
     int *vi = (int*)vertexIndices;
     int *ui = (int*)uvIndices;
@@ -180,7 +180,7 @@ int geo_obj_createObjectData(GeoObject *obj, vec3* vertices, vec2* uvs, vec3* no
 
     obj->data = (vertex *)malloc(vertexCount * sizeof(vertex));
     
-    obj->indicies = (unsigned int*)malloc(vertexCount * sizeof(unsigned int));
+    obj->indicies = (int*)malloc(vertexCount * sizeof(int));
 
     int index = 0;
     for (int i = 0; i < vertexCount; i++) 
@@ -284,8 +284,8 @@ void geo_obj_free(GeoObject *gobj)
 
 void geo_instanceop_init(GeoObject *obj, int capacity) 
 {
-    obj->transform = malloc(capacity * sizeof(mat4));
-    obj->texture = malloc(capacity * sizeof(int));
+    obj->transform = (mat4*)malloc(capacity * sizeof(mat4));
+    obj->texture = (int*)malloc(capacity * sizeof(int));
     obj->instanceCount = 0;
     obj->instanceCapacity = capacity;
 }
@@ -294,7 +294,7 @@ void geo_instanceop_free(GeoObject *obj)
 {
     free(obj->transform);
     free(obj->texture);
-    obj->transform = &obj->baseTransform;
+    obj->transform = (mat4*)&obj->baseTransform;
     obj->texture = &obj->baseTexture;
     obj->instanceCapacity = 0;
     obj->instanceCount = 0;
@@ -303,9 +303,9 @@ void geo_instanceop_free(GeoObject *obj)
 
 void geo_instanceop_resize(GeoObject *obj, int newCapacity) 
 {
-    mat4 *newTransform = realloc(obj->transform, newCapacity * sizeof(mat4));
+    mat4 *newTransform = (mat4*)realloc(obj->transform, newCapacity * sizeof(mat4));
     if (newTransform == NULL) return;
-    int *newTexture = realloc(obj->texture, newCapacity * sizeof(int));
+    int *newTexture = (int*)realloc(obj->texture, newCapacity * sizeof(int));
     if (newTexture == NULL) return;
 
     obj->transform = newTransform;
@@ -348,7 +348,7 @@ void geo_instanceop_clear(GeoObject *obj)
 
 GeoObject *geo_new_object(void)
 {
-    GeoObject *g = malloc(sizeof(GeoObject));
+    GeoObject *g = (GeoObject*)malloc(sizeof(GeoObject));
     g->data = NULL;
     g->indicies = NULL;
     g->baseTexture = 1;
@@ -415,9 +415,9 @@ void particle_update(ParticleSystem *ps)
 ParticleSystem* particle_new(GeoObject *g, int amount)
 {
     geo_instanceop_init(g, amount);
-    ParticleSystem *ps = malloc(sizeof(ParticleSystem));
+    ParticleSystem *ps = (ParticleSystem*)malloc(sizeof(ParticleSystem));
     ps->transform = &(g->baseTransform);
-    Particle *p = malloc(sizeof(Particle) * amount);
+    Particle *p = (Particle*)malloc(sizeof(Particle) * amount);
     ps->geo = g;
     ps->amount = amount;
 
@@ -440,7 +440,7 @@ ParticleSystem* particle_new(GeoObject *g, int amount)
 
 GeoObject_gpu *geo_obj_bindToGpu(GeoObject obj)
 {
-    GeoObject_gpu *gobj = malloc(sizeof(GeoObject_gpu));
+    GeoObject_gpu *gobj = (GeoObject_gpu*)malloc(sizeof(GeoObject_gpu));
 
     gobj->geoObject = obj;
 

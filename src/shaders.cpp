@@ -4,7 +4,7 @@
 
 Shader* newShaderObject(const char *vertex_source, const char *fragment_source)
 {
-    Shader *s = malloc(sizeof(Shader));
+    Shader *s = (Shader*)malloc(sizeof(Shader));
     s->ShaderID = loadShaders(vertex_source, fragment_source);
     s->ViewID = glGetUniformLocation(s->ShaderID, "VIE");
     s->ProjectionID = glGetUniformLocation(s->ShaderID, "PRO");
@@ -34,7 +34,7 @@ GLuint loadShaders(const char *vertex_source, const char *fragment_source)
     glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
     if ( InfoLogLength > 0 )
     {
-        char *errmsg = malloc(InfoLogLength + 1);
+        char *errmsg = (char*)malloc(InfoLogLength + 1);
         glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, errmsg);
         printf("%s\n", errmsg);
         free(errmsg);
@@ -52,7 +52,7 @@ GLuint loadShaders(const char *vertex_source, const char *fragment_source)
     glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
     if ( InfoLogLength > 0 )
     {
-        char *errmsg = malloc(InfoLogLength + 1);
+        char *errmsg = (char*)malloc(InfoLogLength + 1);
         glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, errmsg);
         printf("%s\n", errmsg);
         free(errmsg);
@@ -72,7 +72,7 @@ GLuint loadShaders(const char *vertex_source, const char *fragment_source)
     glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
     if ( InfoLogLength > 0 )
     {
-        char *errmsg = malloc(InfoLogLength + 1);
+        char *errmsg = (char*)malloc(InfoLogLength + 1);
         glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, errmsg);
         printf("%s\n", errmsg);
         free(errmsg);

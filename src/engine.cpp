@@ -52,7 +52,7 @@ int main(void)
 
     program_init();
 
-    program_push(program_get_selftest());
+    //program_push(program_get_selftest());
 
     while (exitLoop == 0)
     {
@@ -96,7 +96,7 @@ void helloworld()
 int program_init()
 {
     programCapacity = 3;
-    programStack = malloc(programCapacity * sizeof(Program *));
+    programStack = (Program**)malloc(programCapacity * sizeof(Program *));
     programTop = -1;
     return 0;
 }
@@ -106,7 +106,7 @@ int program_push(Program *program)
     if (programTop + 1 == programCapacity)
     {
         programCapacity *= 2;
-        programStack = realloc(programStack, programCapacity * sizeof(Program *));
+        programStack = (Program**)realloc(programStack, programCapacity * sizeof(Program *));
     }
     programTop++;
     programStack[programTop] = program;

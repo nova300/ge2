@@ -15,7 +15,7 @@ functionPointerBehaviourPointer behaviourInitialVector[MAXBEHAVIOURS];
 int behaviour_init()
 {
     behaviourCapacity = 10;
-    behaviourVector = malloc(behaviourCapacity * sizeof(Behaviour));
+    behaviourVector = (Behaviour*)malloc(behaviourCapacity * sizeof(Behaviour));
     behaviourTop = 0;
     memset(behaviourIndex, -1, sizeof(behaviourIndex));
     return 0;
@@ -26,7 +26,7 @@ Behaviour *behaviour_get_next()
     if (behaviourTop == behaviourCapacity)
     {
         behaviourCapacity *= 2;
-        behaviourVector = realloc(behaviourVector, behaviourCapacity * sizeof(Behaviour));
+        behaviourVector = (Behaviour*)realloc(behaviourVector, behaviourCapacity * sizeof(Behaviour));
     }
     behaviourTop++;
     return behaviourVector + behaviourTop;
