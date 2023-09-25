@@ -1,49 +1,20 @@
-/*#include "engine.h"
-#include "shaders.h"
+#include "testmode.h"
 
-#include "term.h"
-#include "systems.h"
-
-
-static Program *this = NULL;
-
-typedef struct
-{
-    GeoObject **rq;
-    RenderQueue renderQueue1;
-    GeoObject_gpu *obj2;
-    float sensitivity;
-    float speed;
-    char firstMouse;
-    float lastX;
-    float lastY;
-    float yaw;
-    float pitch;
-    char captureMouse;
-}testmode_localdata;
-
-static testmode_localdata *localstorage = NULL;
-
-void testprogram_key_input_poll(void);
-
-
-int testprogram_init()
+void TestMode::init()
 {
     glfwSetWindowTitle(window, "test");
 
     terminal_clear();
     terminal_print("test program no.1 loaded\n");
 
-    localstorage = malloc(sizeof(testmode_localdata));
-
-    localstorage->sensitivity = 0.1f;
-    localstorage->speed = 2.0f;
-    localstorage->firstMouse = true;
-    localstorage->lastX = SCREEN_WIDTH / 2;
-    localstorage->lastY = SCREEN_HEIGHT / 2;
-    localstorage->yaw = -90.0f;
-    localstorage->pitch = 0.0f;
-    localstorage->captureMouse = 0;
+    sensitivity = 0.1f;
+    speed = 2.0f;
+    firstMouse = true;
+    lastX = SCREEN_WIDTH / 2;
+    lastY = SCREEN_HEIGHT / 2;
+    yaw = -90.0f;
+    pitch = 0.0f;
+    captureMouse = 0;
 
     vec4 eye = {{0, 0, 5, 0}};
     vec4 center = {{0, 0, -1, 0}};
@@ -56,31 +27,31 @@ int testprogram_init()
     GeoObject *gobj = geo_new_object();
     geo_obj_loadFromFile("media/cube.obj", gobj);
 
-    rq_init(&localstorage->renderQueue1, 10);
+    rq_init(&renderQueue1, 10);
 
     Shader *s = newShaderObject(vertex_shader_0, fragment_shader_0);
     //gobj->shader = s;
-    localstorage->renderQueue1.gpuHandle.shader = s;
+    renderQueue1.gpuHandle.shader = s;
 
-    localstorage->rq = localstorage->renderQueue1.objectBuffer;
+    rq = renderQueue1.objectBuffer;
 
-    localstorage->renderQueue1.gpuHandle.textureAtlas = generateRandomAtlas();
+    renderQueue1.gpuHandle.textureAtlas = generateRandomAtlas();
 
     gobj->baseTexture = 5;
-    rq_add_object(&localstorage->renderQueue1, gobj);
+    rq_add_object(&renderQueue1, gobj);
 
     //GeoObject *cube1 = geo_new_object();
     //geo_obj_loadFromFile("media/cube.obj", cube1);
 
-    //rq_add_object(&localstorage->renderQueue1, cube1);
+    //rq_add_object(&renderQueue1, cube1);
 
-    vertex_c *verices = malloc(sizeof(vertex_c) * 3);
+    vertex_c *verices = (vertex_c*)malloc(sizeof(vertex_c) * 3);
 
     verices[0] = gfx_make_color_vertex(1, 1, -1, 1, 1, gfx_make_color(255, 0, 0, 255));
     verices[1] = gfx_make_color_vertex(1, 0, -1, 1, 1, gfx_make_color(0, 255, 0, 255));
     verices[2] = gfx_make_color_vertex(0, 0, -1, 1, 1, gfx_make_color(0, 0, 255, 255));
 
-    unsigned int *indices = malloc(sizeof(unsigned int) * 3);
+    int *indices = (int*)malloc(sizeof(int) * 3);
     indices[0] = 0;
     indices[1] = 1;
     indices[2] = 2;
@@ -93,20 +64,19 @@ int testprogram_init()
     gobj2->indicies = indices;
     gobj2->indexCount = 3;
     
-    localstorage->obj2 = geo_obj_bindToGpu(*gobj2);
+    obj2 = geo_obj_bindToGpu(*gobj2);
 
-    geo_obj_gpu_updateBuffers(localstorage->obj2);
+    geo_obj_gpu_updateBuffers(obj2);
 
-    localstorage->obj2->gpuHandle.shader = s;
-    localstorage->obj2->gpuHandle.textureAtlas = generateRandomAtlas();
+    obj2->gpuHandle.shader = s;
+    obj2->gpuHandle.textureAtlas = generateRandomAtlas();
 
 
 }
 
-int testprogram_update(float deltaTime)
+void TestMode::update(float deltaTime)
 {
-    if (localstorage == NULL) return 0;
-    testprogram_key_input_poll();
+    key_input_poll();
     //transform_rotate(0, 0, 1 * deltaTime, &rq[1]->baseTransform);
     //transform_rotate(1 * deltaTime, 0, 0, &rq[2]->baseTransform);
 
@@ -115,27 +85,23 @@ int testprogram_update(float deltaTime)
     //rq[2]->baseTexture = rand() % 50;
     //rq[2]->instanceDirty = 1;
 
-    rq_update_buffers(&localstorage->renderQueue1);
+    rq_update_buffers(&renderQueue1);
 
     render_skybox();
 
-    geo_render(&localstorage->obj2->gpuHandle);
+    geo_render(&obj2->gpuHandle);
 
-    //geo_render(&localstorage->renderQueue1.gpuHandle);
+    //geo_render(&renderQueue1.gpuHandle);
 }
 
-int testprogram_destroy()
+void TestMode::destroy()
 {
-    freeShaderObject(localstorage->renderQueue1.gpuHandle.shader);
-    glDeleteTextures(1, &localstorage->renderQueue1.gpuHandle.textureAtlas);
-    rq_free_with_objects(&localstorage->renderQueue1);
-    free(localstorage);
-    localstorage == NULL;
-    free(this);
-    this = NULL;
+    freeShaderObject(renderQueue1.gpuHandle.shader);
+    glDeleteTextures(1, &renderQueue1.gpuHandle.textureAtlas);
+    rq_free_with_objects(&renderQueue1);
 }
 
-int testprogram_keyCallback(int key, int action)
+void TestMode::keyCallback(int key, int action)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
@@ -143,54 +109,54 @@ int testprogram_keyCallback(int key, int action)
     }
     if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
     {
-        if (localstorage->captureMouse)
+        if (captureMouse)
         {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            localstorage->captureMouse = 0;
-            return 0;
+            captureMouse = 0;
+            return;
         }
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        localstorage->captureMouse = 1;
+        captureMouse = 1;
     }
 }
 
-int testprogram_mouseCallback(double xpos, double ypos)
+void TestMode::mouseCallback(double xpos, double ypos)
 {
-    if (!localstorage->captureMouse)
+    if (!captureMouse)
     {
-        return 0;
+        return;
     }
-    if (localstorage->firstMouse)
+    if (firstMouse)
     {
-        localstorage->lastX = xpos;
-        localstorage->lastY = ypos;
-        localstorage->firstMouse = false;
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
     }
   
-    float xoffset = xpos - localstorage->lastX;
-    float yoffset = localstorage->lastY - ypos; 
-    localstorage->lastX = xpos;
-    localstorage->lastY = ypos;
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; 
+    lastX = xpos;
+    lastY = ypos;
 
-    xoffset *= localstorage->sensitivity;
-    yoffset *= localstorage->sensitivity;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
 
-    localstorage->yaw += xoffset;
-    localstorage->pitch += yoffset;
+    yaw += xoffset;
+    pitch += yoffset;
 
-    if(localstorage->pitch > 89.0f) localstorage->pitch = 89.0f;
-    if(localstorage->pitch < -89.0f) localstorage->pitch = -89.0f;
+    if(pitch > 89.0f) pitch = 89.0f;
+    if(pitch < -89.0f) pitch = -89.0f;
 
     vec4 direction;
-    direction.x = cos(radians(localstorage->yaw)) * cos(radians(localstorage->pitch));
-    direction.y = sin(radians(localstorage->pitch));
-    direction.z = sin(radians(localstorage->yaw)) * cos(radians(localstorage->pitch));
+    direction.x = cos(radians(yaw)) * cos(radians(pitch));
+    direction.y = sin(radians(pitch));
+    direction.z = sin(radians(yaw)) * cos(radians(pitch));
     direction.w = 0;
     vector_normalize(&direction);
     c_front = direction;
 }
 
-int testprogram_scrollCallback(double xoffset, double yoffset)
+void TestMode::scrollCallback(double xoffset, double yoffset)
 {
     fov = fov - (yoffset * 10);
     if (fov < 1.0f) fov = 1.0f;
@@ -198,9 +164,9 @@ int testprogram_scrollCallback(double xoffset, double yoffset)
     projectionMatrix = matrix_perspective(radians(fov), (float)s_width/s_height, 0.1f, 100.0f);
 }
 
-void testprogram_key_input_poll(void)
+void TestMode::key_input_poll(void)
 {
-    float c_speed = localstorage->speed * deltaTime;
+    float c_speed = speed * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
         c_speed = c_speed * 2;
@@ -244,20 +210,3 @@ void testprogram_key_input_poll(void)
         fb_copy_to_bg();
     }
 }
-
-
-Program *program_get_testmode()
-{
-    if (this != NULL) return this;
-    this = malloc(sizeof(Program));
-
-    this->init = testprogram_init;
-    this->update = testprogram_update;
-    this->destroy = testprogram_destroy;
-
-    this->keyCallback = testprogram_keyCallback;
-    this->mouseCallback = testprogram_mouseCallback;
-    this->scrollCallback = testprogram_scrollCallback;
-    
-    return this;
-}*/

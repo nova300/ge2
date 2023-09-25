@@ -1,6 +1,6 @@
 #include "boidmode.h"
 
-int BoidMode::init()
+void BoidMode::init()
 {   
 
     glfwSetWindowTitle(window, "boids");
@@ -260,7 +260,7 @@ void *BoidMode::update_boids(void* arg)
     }
 }
 
-int BoidMode::update(float deltaTime)
+void BoidMode::update(float deltaTime)
 {
     key_input_poll();
 
@@ -301,7 +301,7 @@ int BoidMode::update(float deltaTime)
     free(result);
 }
 
-int BoidMode::destroy()
+void BoidMode::destroy()
 {
     //pthread_cancel(thread);
     //pthread_join(thread, NULL);
@@ -318,7 +318,7 @@ int BoidMode::destroy()
     free(boids);
 }
 
-int BoidMode::keyCallback(int key, int action)
+void BoidMode::keyCallback(int key, int action)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
@@ -335,11 +335,11 @@ int BoidMode::keyCallback(int key, int action)
     }
 }
 
-int BoidMode::mouseCallback(double xpos, double ypos)
+void BoidMode::mouseCallback(double xpos, double ypos)
 {
     if (!captureMouse)
     {
-        return 1;
+        return;
     }
     if (firstMouse)
     {
@@ -371,7 +371,7 @@ int BoidMode::mouseCallback(double xpos, double ypos)
     c_front = direction;
 }
 
-int BoidMode::scrollCallback(double xoffset, double yoffset)
+void BoidMode::scrollCallback(double xoffset, double yoffset)
 {
     if (scrollmode == 0)
     {
@@ -381,7 +381,7 @@ int BoidMode::scrollCallback(double xoffset, double yoffset)
         if (fov > 120.0f)
         fov = 120.0f;
         projectionMatrix = matrix_perspective(radians(fov), (float)s_width / s_height, 0.1f, 100.0f);
-        return 1;
+        return;
     }
     if (scrollmode == 1)
     {

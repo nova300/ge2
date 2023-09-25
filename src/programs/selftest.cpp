@@ -1,18 +1,9 @@
-#include "engine.h"
-#include "shaders.h"
+#include "selftest.h"
 
-#include "term.h"
-#include "systems.h"
+#include "boidmode.h"
+#include "testmode.h"
 
-static Program *this = NULL;
-static float countdown = 5;
-
-char reinit;
-
-void selftest_key_input_poll(void);
-
-
-int selftest_init()
+void SelfTest::init()
 {
     terminal_clear();
     terminal_print("press F1 to load boid program or F2 to load test program\n");
@@ -22,31 +13,29 @@ int selftest_init()
     
 }
 
-int selftest_update(float deltaTime)
+void SelfTest::update(float deltaTime)
 {
     if (reinit)
     {
-        selftest_init();
+        init();
     }
 
     countdown = countdown + deltaTime;
 
     int len = snprintf(NULL, 0, "%f", countdown);
-    char *result = malloc(len + 1);
+    char *result = (char*)malloc(len + 1);
     snprintf(result, len + 1, "%f", countdown);
     terminal_display(result);
     free(result);
 
-
 }
 
-int selftest_destroy()
+void SelfTest::destroy()
 {
-    free(this);
-    this = NULL;
+
 }
 
-int selftest_keyCallback(int key, int action)
+void SelfTest::keyCallback(int key, int action)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
@@ -55,45 +44,28 @@ int selftest_keyCallback(int key, int action)
 
     if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
     {
-        program_push(program_get_boidmode());
+        program_push(new BoidMode());
         reinit = true;
     }
 
     if (key == GLFW_KEY_F2 && action == GLFW_PRESS)
     {
-        program_push(program_get_testmode());
+        program_push(new TestMode());
         reinit = true;
     }
 }
 
-int selftest_mouseCallback(double xpos, double ypos)
+void SelfTest::mouseCallback(double xpos, double ypos)
 {
 
 }
 
-int selftest_scrollCallback(double xoffset, double yoffset)
+void SelfTest::scrollCallback(double xoffset, double yoffset)
 {
 
 }
 
-void selftest_key_input_poll(void)
+void SelfTest::key_input_poll(void)
 {
 
-}
-
-
-Program *program_get_selftest()
-{
-    if (this != NULL) return this;
-    this = malloc(sizeof(Program));
-
-    this->init = selftest_init;
-    this->update = selftest_update;
-    this->destroy = selftest_destroy;
-
-    this->keyCallback = selftest_keyCallback;
-    this->mouseCallback = selftest_mouseCallback;
-    this->scrollCallback = selftest_scrollCallback;
-    
-    return this;
 }

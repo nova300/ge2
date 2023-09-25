@@ -7,7 +7,7 @@
 #include "systems.h"
 #include <string.h>
 
-#include "boidmode.h"
+#include "selftest.h"
 
 double appTime = 0;
 double deltaTime = 0;
@@ -54,7 +54,7 @@ int main(void)
 
     program_init();
 
-    program_push(new BoidMode());
+    program_push(new SelfTest());
 
     while (exitLoop == 0)
     {
@@ -130,7 +130,7 @@ int program_update(float deltatime)
 {
     if(programTop == -1) return 1;
     Program *top = programStack[programTop];
-    return top->update(deltatime);
+    top->update(deltatime);
     return 1;
 }
 

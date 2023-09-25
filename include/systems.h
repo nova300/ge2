@@ -26,12 +26,12 @@ int task_queue(TaskHandle *task);
 class Program
 {
 public:
-    virtual int init() = 0;
-    virtual int update(float deltaTime) = 0;
-    virtual int destroy() = 0;
-    virtual int keyCallback(int x, int y) = 0;
-    virtual int mouseCallback(double x, double y) = 0;
-    virtual int scrollCallback(double x, double y) = 0;
+    virtual void init() = 0;
+    virtual void update(float deltaTime) = 0;
+    virtual void destroy() = 0;
+    virtual void keyCallback(int x, int y) = 0;
+    virtual void mouseCallback(double x, double y) = 0;
+    virtual void scrollCallback(double x, double y) = 0;
 };
 
 extern Program **programStack;

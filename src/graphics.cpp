@@ -706,6 +706,7 @@ RenderQueue *rq_new_queue(int capacity)
 {
     RenderQueue *rq = (RenderQueue*)malloc(sizeof(RenderQueue));
     rq_init(rq, capacity);
+    return rq;
 }
 
 void rq_init(RenderQueue *rq, int capacity)

@@ -27,12 +27,12 @@ struct boid
 class BoidMode : public Program
 {
 public:
-    int init();
-    int update(float deltaTime);
-    int destroy();
-    int keyCallback(int x, int y);
-    int mouseCallback(double x, double y);
-    int scrollCallback(double x, double y);
+    void init();
+    void update(float deltaTime);
+    void destroy();
+    void keyCallback(int x, int y);
+    void mouseCallback(double x, double y);
+    void scrollCallback(double x, double y);
 private:
 
     void *update_boids(void* arg);

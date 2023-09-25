@@ -28,7 +28,7 @@ int bufsize = 2000;
 
 
 
-int terminal_render()
+void terminal_render()
 {
     timer += deltaTime;
 
@@ -45,7 +45,7 @@ int terminal_render()
         
         //doClear = bufsize;
 
-        return 0;
+        return;
     }
 
     int k = 0;
@@ -62,7 +62,7 @@ int terminal_render()
 
     if (doClear)
     {
-        if (timer < 0.01) return 0;
+        if (timer < 0.01) return;
         
         for (int c = 0; c < columns; c++)
         {
@@ -72,18 +72,18 @@ int terminal_render()
             {
                 doClear = 0;
                 timer = 0;
-                return 0;
+                return;
             } 
         }
         timer = 0;
 
-        return 0;
+        return;
     }
 
-    if (cleared != bufsize) return 0;
+    if (cleared != bufsize) return;
 
     //if (timer < 0.0001) return 0;
-    if (buffpos >= bufflen) return 0;
+    if (buffpos >= bufflen) return;
     timer = 0;
 
     if (buffer[buffpos] == '\n') 
@@ -103,7 +103,7 @@ rect term_get_glyph(unsigned char code)
     return r;
 }
 
-int terminal_print(const char* str)
+void terminal_print(const char* str)
 {
     if (bufflen > bufsize)
     {
