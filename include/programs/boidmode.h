@@ -7,6 +7,9 @@
 #include "term.h"
 #include "systems.h"
 
+#include <atomic>
+#include <thread>
+
 //#include "thread.h"
 //#include <pthread.h>
 //#include <stdatomic.h>
@@ -35,7 +38,7 @@ public:
     void scrollCallback(double x, double y);
 private:
 
-    void *update_boids(void* arg);
+    static void update_boids(BoidMode* boidInstance);
 
     void doCohesion(boid *b);
     void doAlignment(boid *b);
@@ -70,7 +73,9 @@ private:
     float fpstimer;
     float fps;
     int fpscounter;
-    bool threadStatus;
+    std::atomic_bool threadStatus;
+    std::thread *boidThread;
+    std::atomic_bool runThread;
 };
 
 

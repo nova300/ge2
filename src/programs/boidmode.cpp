@@ -10,21 +10,24 @@ void BoidMode::init()
 
     fb_load_bg("media/underwater2.png", true);
 
-    this->sensitivity = 0.1f;
-    this->mspeed = 2.0f;
-    this->firstMouse = true;
-    this->lastX = SCREEN_WIDTH / 2;
-    this->lastY = SCREEN_HEIGHT / 2;
-    this->yaw = -90.0f;
-    this->pitch = 0.0f;
-    this->captureMouse = 0;
-    this->separationWeight = 0.30;
-    this->alignmentWeight = 0.145;
-    this->scrollmode = 0;
-    this->fpstimer = 0;
-    this->fps = 999;
-    this->fpscounter = 0;
-    this->threadStatus = 0;
+    sensitivity = 0.1f;
+    mspeed = 2.0f;
+    firstMouse = true;
+    lastX = SCREEN_WIDTH / 2;
+    lastY = SCREEN_HEIGHT / 2;
+    yaw = -90.0f;
+    pitch = 0.0f;
+    captureMouse = 0;
+    separationWeight = 0.30;
+    alignmentWeight = 0.145;
+    scrollmode = 0;
+    fpstimer = 0;
+    fps = 999;
+    fpscounter = 0;
+    threadStatus = 0;
+    runThread = true;
+
+    boidThread = new std::thread(update_boids, this);
 
     vec4 eye = {{0, 0, 50, 0}};
     vec4 center = {{0, 0, -1, 0}};
@@ -233,29 +236,29 @@ void BoidMode::doRetention(boid *b)
     }
 }
 
-void *BoidMode::update_boids(void* arg)
+void BoidMode::update_boids(BoidMode* boidInstance)
 {
-    while (true)
+    while (boidInstance->runThread)
     {
         //pthread_testcancel();
-        boid *boids = boids;
-        if (threadStatus == 1)
+        boid *boids = boidInstance->boids;
+        if (boidInstance->threadStatus == 1)
         {
             int i;
             #pragma omp parallel for
-            for (i = 0; i < amount; i++)
+            for (i = 0; i < boidInstance->amount; i++)
             {
-                updateLocalBoidList(&boids[i]);
-                doAlignment(&boids[i]);
-                doCohesion(&boids[i]);
-                doSeperation(&boids[i]);
-                doRetention(&boids[i]);
+                boidInstance->updateLocalBoidList(&boids[i]);
+                boidInstance->doAlignment(&boids[i]);
+                boidInstance->doCohesion(&boids[i]);
+                boidInstance->doSeperation(&boids[i]);
+                boidInstance->doRetention(&boids[i]);
                 vector_normalize(&boids[i].direction);
-                transform_move(boids[i].direction.x * (deltaTime * speed), boids[i].direction.y * (deltaTime * speed), boids[i].direction.z * (deltaTime * speed), &boids[i].transform);
+                transform_move(boids[i].direction.x * (deltaTime * boidInstance->speed), boids[i].direction.y * (deltaTime * boidInstance->speed), boids[i].direction.z * (deltaTime * boidInstance->speed), &boids[i].transform);
                 transform_set_rotation(boids[i].direction.x, boids[i].direction.y, boids[i].direction.z, &boids[i].transform);
                 transform_make_matrix(&boids[i].transform);
             }
-            threadStatus = 0;
+            boidInstance->threadStatus = 0;
         }
     }
 }
@@ -264,7 +267,7 @@ void BoidMode::update(float deltaTime)
 {
     key_input_poll();
 
-    if (this->threadStatus == 0)
+    if (threadStatus == 0)
     {
         
         geo_instanceop_clear(this->gobj);
@@ -274,7 +277,7 @@ void BoidMode::update(float deltaTime)
         }
         rq_update_buffers(&this->renderQueue1);
 
-        this->threadStatus = 1;
+        threadStatus = 1;
 
     }
 
@@ -303,8 +306,9 @@ void BoidMode::update(float deltaTime)
 
 void BoidMode::destroy()
 {
-    //pthread_cancel(thread);
-    //pthread_join(thread, NULL);
+    runThread = false;
+    boidThread->join();
+    delete(boidThread);
     threadStatus = 0;
     for (int i = 0; i < amount; i++)
     {   
