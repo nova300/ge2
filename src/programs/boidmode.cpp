@@ -35,10 +35,10 @@ void BoidMode::init()
     c_pos = eye;
     c_front = center;
 
-    //pthread_create(&this->thread, NULL, update_boids, NULL);
-
-    this->gobj = geo_new_object();
-    geo_obj_loadFromFile("media/cube.obj", this->gobj);
+    par_shapes_mesh *mesh1 = par_shapes_create_tetrahedron();
+    par_shapes_compute_normals(mesh1);
+    gobj = geo_obj_createFromParShape(mesh1);
+    par_shapes_free_mesh(mesh1);
 
     rq_init(&this->renderQueue1, 10);
 
