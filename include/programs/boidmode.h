@@ -70,7 +70,6 @@ private:
     float fpstimer;
     float fps;
     int fpscounter;
-    pthread_t thread;
     bool threadStatus;
 };
 

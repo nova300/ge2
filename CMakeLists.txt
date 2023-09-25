@@ -28,6 +28,7 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/programs)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/hlslpp)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/assets)
 
 add_custom_command(TARGET engine POST_BUILD
