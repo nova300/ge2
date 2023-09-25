@@ -454,9 +454,9 @@ void transform_make_matrix(Transform *t)
 
 void transform_set_identity(Transform* t) 
 {
-    t->position = (vec4){0.0f, 0.0f, 0.0f, 0.0f};
-    t->rotation = (vec4){0.0f, 0.0f, 0.0f, 1.0f};
-    t->scale = (vec4){1.0f, 1.0f, 1.0f, 0.0f};
+    t->position = {0.0f, 0.0f, 0.0f, 0.0f};
+    t->rotation = {0.0f, 0.0f, 0.0f, 1.0f};
+    t->scale = {1.0f, 1.0f, 1.0f, 0.0f};
     t->matrix = IDENTITY_MATRIX;
 }
 

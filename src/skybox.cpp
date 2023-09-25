@@ -85,7 +85,7 @@ void skybox_load_texture(const char* filename)
     tileWidth = w / tilesX;
     tileHeight = h / tilesY;
 
-    unsigned char tile[tileWidth * tileHeight * channels];
+    unsigned char *tile = (unsigned char*)malloc(sizeof(unsigned char) * (tileWidth * tileHeight * channels));
 
     int tileSizeX = tileWidth * channels;
     int rowLenght = tilesX * tileSizeX;
