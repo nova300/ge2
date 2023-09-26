@@ -38,15 +38,14 @@ typedef union
 
 typedef union
 {
-	float m[4];
-	struct 
+    float m[2];
+    struct
     {
-	    float x;
+        float x;
         float y;
-        float z;
-        float w;
-	};
-}vec4;
+    };
+    
+}vec2;
 
 typedef union
 {
@@ -57,18 +56,26 @@ typedef union
         float y;
         float z;
     };
+    vec2 xy;
 }vec3;
 
 typedef union
 {
-    float m[2];
-    struct
+	float m[4];
+	struct 
     {
-        float x;
+	    float x;
         float y;
-    };
-    
-}vec2;
+        float z;
+        float w;
+	};
+    struct 
+    {
+        vec2 xy;
+        vec2 zw;
+	};
+    vec3 xyz;
+}vec4;
 
 typedef union
 {

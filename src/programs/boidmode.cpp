@@ -1,5 +1,7 @@
 #include "boidmode.h"
 
+#include "libfixmath/fixmath.h"
+
 void BoidMode::init()
 {   
 
@@ -65,6 +67,19 @@ void BoidMode::init()
     snprintf(result, len + 1, "%d", this->amount);
     terminal_print(result);
     terminal_print(" boids\n");
+    free(result);
+
+    fix16_t num1 = fix16_from_float(1.32f);
+    fix16_t num2 = fix16_from_float(4.343f);
+
+    fix16_t result1 = fix16_mul(num1, num2);
+
+    float result2 = fix16_to_float(result1);
+
+    len = snprintf(NULL, 0, "%f", result2);
+    result = (char*)malloc(len + 1);
+    snprintf(result, len + 1, "%f", result2);
+    terminal_print(result);
     free(result);
 
     this->radius = 10.0f;
