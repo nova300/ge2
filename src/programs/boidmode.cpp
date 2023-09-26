@@ -128,20 +128,24 @@ void BoidMode::doCohesion(boid *b)
 
     for (int i = 0; i < b->localBoidListAmount; i++)
     {
-        avg = vector_add(avg, b->localBoidList[i]->transform.position);
+        avg = avg + b->localBoidList[i]->transform.position;
     }
 
-    avg.x = avg.x / b->localBoidListAmount;
-    avg.y = avg.y / b->localBoidListAmount;
-    avg.z = avg.z / b->localBoidListAmount;
+    //avg.x = avg.x / b->localBoidListAmount;
+    //avg.y = avg.y / b->localBoidListAmount;
+    //avg.z = avg.z / b->localBoidListAmount;
 
-    float4 dir = vector_subtract(avg, b->transform.position);
+    avg.xyz = avg.xyz / b->localBoidListAmount;
 
-    vector_normalize(&dir);
+    float4 dir = avg - b->transform.position;
 
-    b->direction.x = b->direction.x + (dir.x * steerSpeed);
-    b->direction.y = b->direction.y + (dir.y * steerSpeed);
-    b->direction.z = b->direction.z + (dir.z * steerSpeed);
+    dir = normalize(dir);
+
+    //b->direction.x = b->direction.x + (dir.x * steerSpeed);
+    //b->direction.y = b->direction.y + (dir.y * steerSpeed);
+    //b->direction.z = b->direction.z + (dir.z * steerSpeed);
+
+    b->direction.xyz = b->direction.xyz + (dir.xyz * steerSpeed);
 }
 
 void BoidMode::doAlignment(boid *b)
@@ -151,18 +155,22 @@ void BoidMode::doAlignment(boid *b)
 
     for (int i = 0; i < b->localBoidListAmount; i++)
     {
-        avg = vector_add(avg, b->localBoidList[i]->direction);
+        avg = avg + b->localBoidList[i]->direction;
     }
 
-    avg.x = avg.x / b->localBoidListAmount;
-    avg.y = avg.y / b->localBoidListAmount;
-    avg.z = avg.z / b->localBoidListAmount;
+    //avg.x = avg.x / b->localBoidListAmount;
+    //avg.y = avg.y / b->localBoidListAmount;
+    //avg.z = avg.z / b->localBoidListAmount;
+
+    avg.xyz = avg.xyz / b->localBoidListAmount;
 
     float alignSpeed = steerSpeed * alignmentWeight;
 
-    b->direction.x += avg.x * alignSpeed;
-    b->direction.y += avg.y * alignSpeed;
-    b->direction.z += avg.z * alignSpeed;
+    //b->direction.x += avg.x * alignSpeed;
+    //b->direction.y += avg.y * alignSpeed;
+    //b->direction.z += avg.z * alignSpeed;
+
+    b->direction.xyz += avg.xyz * alignSpeed;
 }
 
 void BoidMode::doSeperation(boid *b)
@@ -174,7 +182,7 @@ void BoidMode::doSeperation(boid *b)
     
     for (int i = 0; i < b->localBoidListAmount; i++)
     {
-        float dist = vector_distance(b->transform.position, b->localBoidList[i]->transform.position);
+        float dist = distance(b->transform.position, b->localBoidList[i]->transform.position);
         if (dist < sepRad)
         {
             //closeBoids[closeBoidsAmount] = &boids[i];
@@ -183,10 +191,12 @@ void BoidMode::doSeperation(boid *b)
 
             float4 diff;
 
-            diff.x = b->localBoidList[i]->transform.position.x;
-            diff.y = b->localBoidList[i]->transform.position.y;
-            diff.z = b->localBoidList[i]->transform.position.z;
+            //diff.x = b->localBoidList[i]->transform.position.x;
+            //diff.y = b->localBoidList[i]->transform.position.y;
+            //diff.z = b->localBoidList[i]->transform.position.z;
 
+            diff.xyz = b->localBoidList[i]->transform.position.xyz;
+            
             /*if (dist > 1.0f)
             {
                 dist = 1.0f;
@@ -196,7 +206,7 @@ void BoidMode::doSeperation(boid *b)
             diff.y = diff.y - (diff.y * dist);
             diff.z = diff.z - (diff.z * dist); */
 
-            avg = vector_add(avg, diff);
+            avg = avg + diff;
         }
     }
 
@@ -205,34 +215,40 @@ void BoidMode::doSeperation(boid *b)
         return;
     }
 
-    avg.x = avg.x / closeBoidsAmount;
-    avg.y = avg.y / closeBoidsAmount;
-    avg.z = avg.z / closeBoidsAmount;
+    //avg.x = avg.x / closeBoidsAmount;
+    //avg.y = avg.y / closeBoidsAmount;
+    //avg.z = avg.z / closeBoidsAmount;
 
-    float4 dir = vector_subtract(avg, b->transform.position);
+    avg.xyz = avg.xyz / closeBoidsAmount;
+
+    float4 dir = avg - b->transform.position;
 
     float separationSpeed = steerSpeed * separationWeight;
 
-    b->direction.x -= dir.x * separationSpeed;
-    b->direction.y -= dir.y * separationSpeed;
-    b->direction.z -= dir.z * separationSpeed;
+    //b->direction.x -= dir.x * separationSpeed;
+    //b->direction.y -= dir.y * separationSpeed;
+    //b->direction.z -= dir.z * separationSpeed;
+
+    b->direction.xyz -= dir.xyz * separationSpeed;
 }
 
 void BoidMode::doRetention(boid *b)
 {
     float retentionDist = 40.0f;
-    if (vector_distance(transform->position, b->transform.position) > (retentionDist * 2))
+    if (distance(transform->position, b->transform.position) > float1(retentionDist * 2))
     {
         transform_position(0.0f, 0.0f, 0.0f, &b->transform);
     }
 
-    if (vector_distance(transform->position, b->transform.position) > retentionDist)
+    if (distance(transform->position, b->transform.position) > float1(retentionDist))
     {
-        float4 dir = vector_subtract(b->transform.position, transform->position);
+        float4 dir = b->transform.position - transform->position;
 
-        b->direction.x -= dir.x * steerSpeed * 2;
-        b->direction.y -= dir.y * steerSpeed * 2;
-        b->direction.z -= dir.z * steerSpeed * 2;
+        //b->direction.x -= dir.x * steerSpeed * 2;
+        //b->direction.y -= dir.y * steerSpeed * 2;
+        //b->direction.z -= dir.z * steerSpeed * 2;
+
+        b->direction.xyz -= dir.xyz * steerSpeed * 2;
     }
 }
 
@@ -245,7 +261,7 @@ void BoidMode::update_boids(BoidMode* boidInstance)
         if (boidInstance->threadStatus == 1)
         {
             int i;
-            #pragma omp parallel for
+            #pragma omp parallel for num_threads(4)
             for (i = 0; i < boidInstance->amount; i++)
             {
                 boidInstance->updateLocalBoidList(&boids[i]);
@@ -253,8 +269,9 @@ void BoidMode::update_boids(BoidMode* boidInstance)
                 boidInstance->doCohesion(&boids[i]);
                 boidInstance->doSeperation(&boids[i]);
                 boidInstance->doRetention(&boids[i]);
-                vector_normalize(&boids[i].direction);
-                transform_move(boids[i].direction.x * (deltaTime * boidInstance->speed), boids[i].direction.y * (deltaTime * boidInstance->speed), boids[i].direction.z * (deltaTime * boidInstance->speed), &boids[i].transform);
+                boids[i].direction = normalize(boids[i].direction);
+                //transform_move(boids[i].direction.x * (deltaTime * boidInstance->speed), boids[i].direction.y * (deltaTime * boidInstance->speed), boids[i].direction.z * (deltaTime * boidInstance->speed), &boids[i].transform);
+                boids[i].transform.position.xyz += boids[i].direction.xyz * (deltaTime * boidInstance->speed);
                 transform_set_rotation(boids[i].direction.x, boids[i].direction.y, boids[i].direction.z, &boids[i].transform);
                 transform_make_matrix(&boids[i].transform);
             }
