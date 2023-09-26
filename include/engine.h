@@ -31,9 +31,9 @@ extern double appTime;
 extern mat4 viewMatrix;
 extern mat4 projectionMatrix;
 
-extern vec4 c_pos;
-extern vec4 c_front;
-extern vec4 c_up;
+extern float4 c_pos;
+extern float4 c_front;
+extern float4 c_up;
 
 extern float fov;
 extern int s_width;

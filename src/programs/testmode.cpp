@@ -16,8 +16,8 @@ void TestMode::init()
     pitch = 0.0f;
     captureMouse = 0;
 
-    vec4 eye = {{0, 0, 5, 0}};
-    vec4 center = {{0, 0, -1, 0}};
+    float4 eye = float4(0, 0, 5, 0);
+    float4 center = float4(0, 0, -1, 0);
 
     c_pos = eye;
     c_front = center;
@@ -147,7 +147,7 @@ void TestMode::mouseCallback(double xpos, double ypos)
     if(pitch > 89.0f) pitch = 89.0f;
     if(pitch < -89.0f) pitch = -89.0f;
 
-    vec4 direction;
+    float4 direction;
     direction.x = cos(radians(yaw)) * cos(radians(pitch));
     direction.y = sin(radians(pitch));
     direction.z = sin(radians(yaw)) * cos(radians(pitch));
@@ -161,7 +161,8 @@ void TestMode::scrollCallback(double xoffset, double yoffset)
     fov = fov - (yoffset * 10);
     if (fov < 1.0f) fov = 1.0f;
     if (fov > 120.0f) fov = 120.0f; 
-    projectionMatrix = matrix_perspective(radians(fov), (float)s_width/s_height, 0.1f, 100.0f);
+    float4x4 m = matrix_perspective(radians(fov), (float)s_width/s_height, 0.1f, 100.0f);
+    store(m, (float*)&projectionMatrix);
 }
 
 void TestMode::key_input_poll(void)
@@ -182,13 +183,13 @@ void TestMode::key_input_poll(void)
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {   
-        vec4 m = vector_cross(c_front, c_up);
+        float4 m = vector_cross(c_front, c_up);
         vector_normalize(&m);
         c_pos = vector_subtract(c_pos, vector_scale(m, c_speed));
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        vec4 m = vector_cross(c_front, c_up);
+        float4 m = vector_cross(c_front, c_up);
         vector_normalize(&m);
         c_pos = vector_add(c_pos, vector_scale(m, c_speed));
     }

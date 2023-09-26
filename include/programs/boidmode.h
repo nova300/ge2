@@ -19,7 +19,7 @@ struct boid
     boid **localBoidList;
     int localBoidListAmount;
     Transform transform;
-    vec4 direction;
+    float4 direction;
     float radius;
     float steerSpeed;
     float speed;
@@ -68,7 +68,7 @@ private:
     float separationWeight;
     float alignmentWeight;
     char scrollmode;
-    vec4 zero;
+    float4 zero;
     GeoObject *gobj;
     float fpstimer;
     float fps;

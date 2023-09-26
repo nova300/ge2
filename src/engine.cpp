@@ -1,7 +1,7 @@
-#include "engine.h"
-
 #define SHADERS_H_IMPLEMENTATION
 #include "shaders.h"
+
+#include "engine.h"
 
 #include "term.h"
 #include "systems.h"
@@ -19,9 +19,9 @@ float degrees = 0;
 mat4 projectionMatrix;
 mat4 viewMatrix;
 
-vec4 c_pos = {{0, 0, 50, 0}};
-vec4 c_front = {{0, 0, -1, 0}};
-vec4 c_up = {{0, 1, 0, 0}};
+float4 c_pos = float4(0, 0, 50, 0);
+float4 c_front = float4(0, 0, -1, 0);
+float4 c_up = float4(0, 1, 0, 0);
 
 float fov = 60.0f;
 int s_width = SCREEN_WIDTH;
@@ -42,12 +42,14 @@ int main(void)
     }
     printf("ok\n");
 
-    projectionMatrix = matrix_perspective(radians(fov), (float)SCREEN_WIDTH/SCREEN_HEIGHT, 0.1f, 100.0f);
+    float4x4 m = matrix_perspective(radians(fov), (float)SCREEN_WIDTH/SCREEN_HEIGHT, 0.1f, 100.0f);
+    store(m, (float*)&projectionMatrix);
 
-    vec4 eye = {{5, 5, 5, 0}};
-    vec4 center = {{0, 0, 0, 0}};
-    vec4 up = {{0, 1, 0, 0}};
-    viewMatrix = matrix_lookAt(eye, center, up);
+    float4 eye = float4(5, 5, 5, 0);
+    float4 center = float4(0, 0, 0, 0);
+    float4 up = float4(0, 1, 0, 0);
+    float4x4 vm = matrix_lookAt(eye, center, up);
+    store(vm, (float*)&viewMatrix);
 
     fb_init();
     terminal_init();
@@ -58,7 +60,8 @@ int main(void)
 
     while (exitLoop == 0)
     {
-        viewMatrix = matrix_lookAt(c_pos, vector_add(c_pos, c_front), c_up);
+        float4x4 vm = matrix_lookAt(eye, center, up);
+        store(vm, (float*)&viewMatrix);
         deltaTime = glfwGetTime() - appTime;
         if (deltaTime > 10) deltaTime = 10;
         appTime = glfwGetTime();

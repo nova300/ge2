@@ -1,3 +1,4 @@
+#include "hlsl++.h"
 #include "graphics.h"
 #include <engine.h>
 #include <stdlib.h>
@@ -378,7 +379,7 @@ GeoObject geo_new_stack_object(void)
     g.baseTexture = 1;
     g.instanceCount = 1;
     g.instanceCapacity = 0;
-    g.transform = &g.baseTransform.matrix;
+    g.transform = &(g.baseTransform.matrix);
     g.texture = &g.baseTexture;
 
     g.dataDirty = 1;

@@ -1,3 +1,4 @@
+#include "hlsl++_matrix_float.h"
 #include "graphics.h"
 #include "engine.h"
 #include "stb_image.h"
@@ -181,8 +182,8 @@ vertex *make_skybox_rect(int tileIndex, int *indicies)
 void render_skybox()
 {
     if (!initialized) return;
-    vec4 cameraFocus = vector_add(c_pos, c_front);
-    vec4 cameraFace = vector_subtract(cameraFocus, c_pos);
+    float4 cameraFocus = vector_add(c_pos, c_front);
+    float4 cameraFace = vector_subtract(cameraFocus, c_pos);
     //vector_normalize(&cameraFace);
 
     skyboxinfo.yaw = ((atan2f(cameraFace.x, cameraFace.z)));
@@ -213,8 +214,10 @@ void render_skybox()
         renderQueueInitialized = true;
     }
 
-    matrix = matrix_ortho(left, right, skyboxinfo.scaledY - SCREEN_HEIGHT, skyboxinfo.scaledY, 0.0f, 3.0f);
-    modelMatrix = IDENTITY_MATRIX;
+    float4x4 m = matrix_ortho(left, right, skyboxinfo.scaledY - SCREEN_HEIGHT, skyboxinfo.scaledY, 0.0f, 3.0f);
+    store(m, (float*)&matrix);
+    float4x4 mm = IDENTITY_MATRIX;
+    store(mm, (float*)&modelMatrix);
 
     skyboxRq.count = 0;
 

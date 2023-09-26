@@ -7,9 +7,16 @@
 #define PAR_SHAPES_IMPLEMENTATION
 #include "par_shapes.h"
 
+#define HLSLPP_FEATURE_TRANSFORM
+#include "hlsl++.h"
+
 #include "graphics.h"
 
+using namespace hlslpp;
+
 /* 3D math */
+
+//mat4 IDENTITY_MATRIX = 
 
 float radians(float dgr)
 {
@@ -17,7 +24,7 @@ float radians(float dgr)
     return rad;
 }
 
-void vector_normalize(vec4* v) 
+void vector_normalize(float4* v) 
 {
     #ifndef DO_MMX
 	float sqr = v->x * v->x + v->y * v->y + v->z * v->z;
@@ -56,7 +63,7 @@ void vector_normalize(vec4* v)
     #endif
 }
 
-float vector_dot(vec4 *v1, vec4 *v2) 
+float vector_dot(float4 *v1, float4 *v2) 
 {
     #ifndef DO_MMX
 	return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
@@ -207,43 +214,43 @@ float *vector_dot_multi(vec4 *v1, vec4 *v2, unsigned int count)
 */
 
 
-vec4 vector_cross(vec4 v1, vec4 v2) 
+float4 vector_cross(float4 v1, float4 v2) 
 {
-	vec4 out = {{0}};
+	float4 out;
 	out.x = v1.y*v2.z - v1.z*v2.y;
 	out.y = v1.z*v2.x - v1.x*v2.z;
 	out.z = v1.x*v2.y - v1.y*v2.x;
 	return out;
 }
 
-vec4 vector_subtract(vec4 v1, vec4 v2)
+float4 vector_subtract(float4 v1, float4 v2)
 {
-    vec4 out = {{0}};
+    float4 out;
     out.x = v1.x - v2.x;
     out.y = v1.y - v2.y;
     out.z = v1.z - v2.z;
     return out;
 }
 
-vec4 vector_scale(vec4 v1, float s)
+float4 vector_scale(float4 v1, float s)
 {
-    vec4 out = {{0}};
+    float4 out;
     out.x = v1.x * s;
     out.y = v1.y * s;
     out.z = v1.z * s;
     return out;
 }
 
-vec4 vector_add(vec4 v1, vec4 v2)
+float4 vector_add(float4 v1, float4 v2)
 {
-    vec4 out = {{0}};
+    float4 out;
     out.x = v1.x + v2.x;
     out.y = v1.y + v2.y;
     out.z = v1.z + v2.z;
     return out;
 }
 
-float vector_distance(vec4 v1, vec4 v2)
+float vector_distance(float4 v1, float4 v2)
 {
     float dx = v2.x - v1.x;
     float dy = v2.y - v1.y;
@@ -252,95 +259,93 @@ float vector_distance(vec4 v1, vec4 v2)
     return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-mat4 matrix_perspective(float fovy, float aspect_ratio, float near_plane, float far_plane) 
+float4x4 matrix_perspective(float fovy, float aspect_ratio, float near_plane, float far_plane) 
 {
-	mat4 out = { { 0 } };
+	float4x4 out;
 
     float tan_half_angle = tan(fovy / 2);
 	float x_scale = 1 / (aspect_ratio * tan_half_angle);
 	float y_scale = 1 / (tan_half_angle);
 	float frustum_length = far_plane - near_plane;
 
-	out.x.x = x_scale;
-	out.y.y = y_scale;
-	out.z.z = -((far_plane + near_plane) / frustum_length);
-	out.z.w = -1;
-	out.w.z = -((2 * near_plane * far_plane) / frustum_length);
+	//out.x.x = x_scale;
+	//out.y.y = y_scale;
+	//out.z.z = -((far_plane + near_plane) / frustum_length);
+	//out.z.w = -1;
+	//out.w.z = -((2 * near_plane * far_plane) / frustum_length);
+
+    out = float4x4(
+        x_scale, 0, 0, 0,
+        0, y_scale, 0, 0,
+        0, 0, -((far_plane + near_plane) / frustum_length), -1,
+        0, 0, -((2 * near_plane * far_plane) / frustum_length), 0
+    );
 	
 	return out;
 }
 
-mat4 matrix_ortho(float left, float right, float bottom, float top, float near_plane, float far_plane) 
+float4x4 matrix_ortho(float left, float right, float bottom, float top, float near_plane, float far_plane) 
 {
-	mat4 out = IDENTITY_MATRIX;
+	float4x4 out = IDENTITY_MATRIX;
 
-	out.x.x = 2.0f / (right - left);
-	out.y.y = 2.0f / (top - bottom);
-	out.z.z = -2.0f / (far_plane - near_plane);
-	out.w.x = -(right + left) / (right - left);
-	out.w.y = -(top + bottom) / (top - bottom);
-    out.w.z = -(far_plane + near_plane) / (far_plane - near_plane);
-    out.w.w = 1.0f;
+	out._m00 = 2.0f / (right - left);
+	out._m11 = 2.0f / (top - bottom);
+	out._m22 = -2.0f / (far_plane - near_plane);
+	out._m30 = -(right + left) / (right - left);
+	out._m31 = -(top + bottom) / (top - bottom);
+    out._m32 = -(far_plane + near_plane) / (far_plane - near_plane);
+    out._m33 = 1.0f;
 	
 	return out;
 }
 
-mat4 matrix_lookAt(vec4 eye, vec4 center, vec4 up) 
+float4x4 matrix_lookAt(float4 eye, float4 center, float4 up) 
 {
-    vec4 f = vector_subtract(center, eye);
+    float4 f = vector_subtract(center, eye);
 	vector_normalize(&f);
-	vec4 u = up;
+	float4 u = up;
     vector_normalize(&u);
-	vec4 s = vector_cross(f, u);
+	float4 s = vector_cross(f, u);
 	vector_normalize(&s);
 	u = vector_cross(s, f);
 
-	mat4 out = IDENTITY_MATRIX;
-	out.x.x = s.x;
-	out.y.x = s.y;
-	out.z.x = s.z;
+	float4x4 out = IDENTITY_MATRIX;
+	out._m00 = s.x;
+	out._m10 = s.y;
+	out._m20 = s.z;
 
-	out.x.y = u.x;
-	out.y.y = u.y;
-	out.z.y = u.z;
+	out._m01 = u.x;
+	out._m11 = u.y;
+	out._m21 = u.z;
 
-	out.x.z = -f.x;
-	out.y.z = -f.y;
-	out.z.z = -f.z;
+	out._m02 = -f.x;
+	out._m12 = -f.y;
+	out._m22 = -f.z;
 
-	out.w.x = -vector_dot(&s, &eye);
-	out.w.y = -vector_dot(&u, &eye);
-	out.w.z =  vector_dot(&f, &eye);
+	out._m30 = -vector_dot(&s, &eye);
+	out._m31 = -vector_dot(&u, &eye);
+	out._m32 =  vector_dot(&f, &eye);
 	return out;
 }
 
-void matrix_rotateY(mat4* m, float angle) 
+void matrix_rotateY(float4x4* m, float angle) 
 {
-	mat4 rotation = IDENTITY_MATRIX;
+	/*mat4 rotation = IDENTITY_MATRIX;
 	float sine = (float)sin(angle);
 	float cosine = (float)cos(angle);
 	
-	rotation.x.x = cosine;
-	rotation.z.x = sine;
-	rotation.x.z = -sine;
-	rotation.z.z = cosine;
-
-	memcpy(m->m, matrix_multiply(m, &rotation).m, sizeof(m->m));
+	rotation._m00 = cosine;
+	rotation._m20 = sine;
+	rotation._m02 = -sine;
+	rotation._m22 = cosine;*/
+    float4x4 matrix_rotated;
+	matrix_rotated = m->rotation_y(angle);
+    *m = matrix_rotated;
 }
 
-mat4 matrix_multiply(mat4* m1, mat4* m2) 
+float4x4 matrix_multiply(float4x4* m1, float4x4* m2) 
 {
-	mat4 out = IDENTITY_MATRIX;
-	unsigned int row, column, row_offset;
-
-	for (row = 0, row_offset = row * 4; row < 4; ++row, row_offset = row * 4)
-    {
-      	for (column = 0; column < 4; ++column)
-        {
-            out.m[row_offset + column] = (m1->m[row_offset + 0] * m2->m[column + 0]) + (m1->m[row_offset + 1] * m2->m[column + 4]) + (m1->m[row_offset + 2] * m2->m[column + 8]) + (m1->m[row_offset + 3] * m2->m[column + 12]);  
-        }
-    }
-
+	float4x4 out = *m1 * *m2;
 	return out;
 }
 
@@ -372,13 +377,13 @@ void transform_rotate(float x, float y, float z, Transform *t)
     float cp = cosf(x * 0.5f);
     float sp = sinf(x * 0.5f);
 
-    vec4 rotation;
+    float4 rotation;
     rotation.x = sr * cp * cy - cr * sp * sy;
     rotation.y = cr * sp * cy + sr * cp * sy;
     rotation.z = cr * cp * sy - sr * sp * cy;
     rotation.w = cr * cp * cy + sr * sp * sy;
 
-    vec4 rotated_q;
+    float4 rotated_q;
     rotated_q.w = t->rotation.w * rotation.w - t->rotation.x * rotation.x - t->rotation.y * rotation.y - t->rotation.z * rotation.z;
     rotated_q.x = t->rotation.w * rotation.x + t->rotation.x * rotation.w + t->rotation.y * rotation.z - t->rotation.z * rotation.y;
     rotated_q.y = t->rotation.w * rotation.y - t->rotation.x * rotation.z + t->rotation.y * rotation.w + t->rotation.z * rotation.x;
@@ -408,14 +413,13 @@ void transform_set_rotation(float x, float y, float z, Transform *t)
 void transform_make_matrix(Transform *t) 
 {
 
-    mat4 model_matrix;
-    memset(&model_matrix, 0, sizeof(mat4));
+    float4x4 model_matrix = IDENTITY_MATRIX;
 
     // Translation matrix
-    model_matrix.w.x = t->position.x;
-    model_matrix.w.y = t->position.y;
-    model_matrix.w.z = t->position.z;
-    model_matrix.w.w = 1.0f;
+    model_matrix._m30 = t->position.x;
+    model_matrix._m31 = t->position.y;
+    model_matrix._m32 = t->position.z;
+    model_matrix._m33 = 1.0f;
 
     // Rotation matrix
     float x = t->rotation.x;
@@ -428,30 +432,24 @@ void transform_make_matrix(Transform *t)
     float zz = z * z;
     float ww = w * w;
 
-    model_matrix.x.x = xx - yy - zz + ww;
-    model_matrix.y.x = 2.0f * (x * y + z * w);
-    model_matrix.z.x = 2.0f * (x * z - y * w);
+    model_matrix._m00 = xx - yy - zz + ww;
+    model_matrix._m10 = 2.0f * (x * y + z * w);
+    model_matrix._m20 = 2.0f * (x * z - y * w);
 
-    model_matrix.x.y = 2.0f * (x * y - z * w);
-    model_matrix.y.y = -xx + yy - zz + ww;
-    model_matrix.z.y = 2.0f * (y * z + x * w);
+    model_matrix._m01 = 2.0f * (x * y - z * w);
+    model_matrix._m11 = -xx + yy - zz + ww;
+    model_matrix._m21 = 2.0f * (y * z + x * w);
 
-    model_matrix.x.z = 2.0f * (x * z + y * w);
-    model_matrix.y.z = 2.0f * (y * z - x * w);
-    model_matrix.z.z = -xx - yy + zz + ww;
+    model_matrix._m02 = 2.0f * (x * z + y * w);
+    model_matrix._m12 = 2.0f * (y * z - x * w);
+    model_matrix._m22 = -xx - yy + zz + ww;
 
     // Scale matrix
-    model_matrix.x.x *= t->scale.x;
-    model_matrix.x.y *= t->scale.x;
-    model_matrix.x.z *= t->scale.x;
-    model_matrix.y.x *= t->scale.y;
-    model_matrix.y.y *= t->scale.y;
-    model_matrix.y.z *= t->scale.y;
-    model_matrix.z.x *= t->scale.z;
-    model_matrix.z.y *= t->scale.z;
-    model_matrix.z.z *= t->scale.z;
+    float4x4 scaled_matrix;
+    scaled_matrix = model_matrix.scale(t->scale.x, t->scale.y, t->scale.z);
 
-    t->matrix = model_matrix;
+    //t->matrix = scaled_matrix;
+    store(model_matrix ,(float*)&t->matrix);
 }
 
 void transform_set_identity(Transform* t) 
@@ -459,7 +457,7 @@ void transform_set_identity(Transform* t)
     t->position = {0.0f, 0.0f, 0.0f, 0.0f};
     t->rotation = {0.0f, 0.0f, 0.0f, 1.0f};
     t->scale = {1.0f, 1.0f, 1.0f, 0.0f};
-    t->matrix = IDENTITY_MATRIX;
+    store(float4x4::identity(), (float*)&t->matrix);
 }
 
 void geo_render(GeoObject_gpu_handle *rq)

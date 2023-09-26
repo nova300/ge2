@@ -10,11 +10,19 @@
 #include <GL/glew.h>
 #include "par_shapes.h"
 
+//#include "hlsl++_vector_float_type.h"
+//#include "hlsl++_vector_uint_type.h"
+
+#define HLSLPP_FEATURE_TRANSFORM
+#include "hlsl++.h"
+
 #ifdef DO_MMX
 #include <xmmintrin.h>
 #endif
 
 #define DO_INTEL_WORKAROUND false
+
+using namespace hlslpp;
 
 typedef union
 {
@@ -81,30 +89,22 @@ typedef struct
     int w, h;
 }rect;
 
+#define IDENTITY_MATRIX float4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
 
 
-static const mat4 IDENTITY_MATRIX = 
-{{
-	1, 0, 0, 0,
-	0, 1, 0, 0,
-	0, 0, 1, 0,
-	0, 0, 0, 1
-}};
+float vector_dot(float4 *v1, float4 *v2);
+float4 vector_cross(float4 v1, float4 v2);
+void vector_normalize(float4* v);
+float4 vector_subtract(float4 v1, float4 v2);
+float4 vector_add(float4 v1, float4 v2);
+float4 vector_scale(float4 v1, float s);
+float vector_distance(float4 v1, float4 v2);
 
-
-float vector_dot(vec4 *v1, vec4 *v2);
-vec4 vector_cross(vec4 v1, vec4 v2);
-void vector_normalize(vec4* v);
-vec4 vector_subtract(vec4 v1, vec4 v2);
-vec4 vector_add(vec4 v1, vec4 v2);
-vec4 vector_scale(vec4 v1, float s);
-float vector_distance(vec4 v1, vec4 v2);
-
-void matrix_rotateY(mat4* m, float angle);
-mat4 matrix_multiply(mat4* m1, mat4* m2);
-mat4 matrix_lookAt(vec4 eye, vec4 center, vec4 up);
-mat4 matrix_perspective(float fovy, float aspect_ratio, float near_plane, float far_plane);
-mat4 matrix_ortho(float left, float right, float bottom, float top, float near_plane, float far_plane);
+void matrix_rotateY(float4x4* m, float angle);
+float4x4 matrix_multiply(float4x4* m1, float4x4* m2);
+float4x4 matrix_lookAt(float4 eye, float4 center, float4 up);
+float4x4 matrix_perspective(float fovy, float aspect_ratio, float near_plane, float far_plane);
+float4x4 matrix_ortho(float left, float right, float bottom, float top, float near_plane, float far_plane);
 
 float radians(float dgr);
 int FloatEquals(float a, float b, float floatEqualityThreshold);
@@ -133,9 +133,9 @@ void freeShaderObject(Shader *shader);
 typedef struct
 {
     mat4 matrix;
-    vec4 position;
-    vec4 rotation;
-    vec4 scale;
+    float4 position;
+    float4 rotation;
+    float4 scale;
 }Transform;
 
 void transform_position(float x, float y, float z, Transform *t);

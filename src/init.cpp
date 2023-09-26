@@ -8,7 +8,8 @@ void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum se
 void frameBufferSizeCallback(GLFWwindow* window,int width,int height) 
 {
     glViewport(0,0,width,height);
-    projectionMatrix = matrix_perspective(radians(fov), (float)width/height, 0.1f, 100.0f);
+    float4x4 m = matrix_perspective(radians(fov), (float)width/height, 0.1f, 100.0f);
+    store(m, (float*)&projectionMatrix);
     s_width = width;
     s_height = height;
 }

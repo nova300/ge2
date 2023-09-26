@@ -29,8 +29,8 @@ void BoidMode::init()
 
     boidThread = new std::thread(update_boids, this);
 
-    vec4 eye = {{0, 0, 50, 0}};
-    vec4 center = {{0, 0, -1, 0}};
+    float4 eye = float4(0, 0, 50, 0);
+    float4 center = float4(0, 0, -1, 0);
 
     c_pos = eye;
     c_front = center;
@@ -123,7 +123,7 @@ void BoidMode::updateLocalBoidList(boid *b)
 
 void BoidMode::doCohesion(boid *b)
 {
-    vec4 avg = zero;
+    float4 avg = zero;
     if (b->localBoidListAmount == 0) return;
 
     for (int i = 0; i < b->localBoidListAmount; i++)
@@ -135,18 +135,18 @@ void BoidMode::doCohesion(boid *b)
     avg.y = avg.y / b->localBoidListAmount;
     avg.z = avg.z / b->localBoidListAmount;
 
-    vec4 dir = vector_subtract(avg, b->transform.position);
+    float4 dir = vector_subtract(avg, b->transform.position);
 
     vector_normalize(&dir);
 
-    b->direction.x += dir.x * steerSpeed;
-    b->direction.y += dir.y * steerSpeed;
-    b->direction.z += dir.z * steerSpeed;
+    b->direction.x = b->direction.x + (dir.x * steerSpeed);
+    b->direction.y = b->direction.y + (dir.y * steerSpeed);
+    b->direction.z = b->direction.z + (dir.z * steerSpeed);
 }
 
 void BoidMode::doAlignment(boid *b)
 {
-    vec4 avg = zero;
+    float4 avg = zero;
     if (b->localBoidListAmount == 0) return;
 
     for (int i = 0; i < b->localBoidListAmount; i++)
@@ -170,7 +170,7 @@ void BoidMode::doSeperation(boid *b)
     float sepRad = radius * 0.8f;
     //boid *closeBoids[50];
     int closeBoidsAmount = 0;
-    vec4 avg = zero;
+    float4 avg = zero;
     
     for (int i = 0; i < b->localBoidListAmount; i++)
     {
@@ -181,7 +181,7 @@ void BoidMode::doSeperation(boid *b)
             closeBoidsAmount++;
             //sepRad = dist;
 
-            vec4 diff;
+            float4 diff;
 
             diff.x = b->localBoidList[i]->transform.position.x;
             diff.y = b->localBoidList[i]->transform.position.y;
@@ -209,7 +209,7 @@ void BoidMode::doSeperation(boid *b)
     avg.y = avg.y / closeBoidsAmount;
     avg.z = avg.z / closeBoidsAmount;
 
-    vec4 dir = vector_subtract(avg, b->transform.position);
+    float4 dir = vector_subtract(avg, b->transform.position);
 
     float separationSpeed = steerSpeed * separationWeight;
 
@@ -228,7 +228,7 @@ void BoidMode::doRetention(boid *b)
 
     if (vector_distance(transform->position, b->transform.position) > retentionDist)
     {
-        vec4 dir = vector_subtract(b->transform.position, transform->position);
+        float4 dir = vector_subtract(b->transform.position, transform->position);
 
         b->direction.x -= dir.x * steerSpeed * 2;
         b->direction.y -= dir.y * steerSpeed * 2;
@@ -366,12 +366,13 @@ void BoidMode::mouseCallback(double xpos, double ypos)
     if(pitch > 89.0f) pitch = 89.0f;
     if(pitch < -89.0f) pitch = -89.0f;
 
-    vec4 direction;
+    float4 direction;
     direction.x = cos(radians(yaw)) * cos(radians(pitch));
     direction.y = sin(radians(pitch));
     direction.z = sin(radians(yaw)) * cos(radians(pitch));
     direction.w = 0;
-    vector_normalize(&direction);
+    direction = normalize(direction);
+    //vector_normalize(&direction);
     c_front = direction;
 }
 
@@ -384,7 +385,8 @@ void BoidMode::scrollCallback(double xoffset, double yoffset)
         fov = 1.0f;
         if (fov > 120.0f)
         fov = 120.0f;
-        projectionMatrix = matrix_perspective(radians(fov), (float)s_width / s_height, 0.1f, 100.0f);
+        float4x4 m = matrix_perspective(radians(fov), (float)s_width/s_height, 0.1f, 100.0f);
+        store(m, (float*)&projectionMatrix);
         return;
     }
     if (scrollmode == 1)
@@ -418,13 +420,13 @@ void BoidMode::key_input_poll(void)
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {   
-        vec4 m = vector_cross(c_front, c_up);
+        float4 m = vector_cross(c_front, c_up);
         vector_normalize(&m);
         c_pos = vector_subtract(c_pos, vector_scale(m, c_speed));
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        vec4 m = vector_cross(c_front, c_up);
+        float4 m = vector_cross(c_front, c_up);
         vector_normalize(&m);
         c_pos = vector_add(c_pos, vector_scale(m, c_speed));
     }
