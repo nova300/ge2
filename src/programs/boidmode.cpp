@@ -123,12 +123,14 @@ void BoidMode::updateLocalBoidList(boid *b)
 {
     b->localBoidListAmount = 0;
 
-    for (int i = 0; i < amount; i++)
+    bool run = true;
+
+    for (int i = 0; i < amount && run; i++)
     {
-        if (b->localBoidListAmount == 20) break;
+        if (b->localBoidListAmount >= 20) run = false;
         if (boids[i].id == b->id) continue;
 
-        if (vector_distance(b->transform.position, boids[i].transform.position) < radius)
+        if (vector_distance_sqr(b->transform.position, boids[i].transform.position) < (radius * radius))
         {
             b->localBoidList[b->localBoidListAmount] = &boids[i];
             b->localBoidListAmount++;
@@ -191,13 +193,14 @@ void BoidMode::doAlignment(boid *b)
 void BoidMode::doSeperation(boid *b)
 {
     float sepRad = radius * 0.8f;
+    sepRad = sepRad * sepRad;
     //boid *closeBoids[50];
     int closeBoidsAmount = 0;
     float4 avg = zero;
     
     for (int i = 0; i < b->localBoidListAmount; i++)
     {
-        float dist = distance(b->transform.position, b->localBoidList[i]->transform.position);
+        float dist = vector_distance_sqr(b->transform.position, b->localBoidList[i]->transform.position);
         if (dist < sepRad)
         {
             //closeBoids[closeBoidsAmount] = &boids[i];
@@ -250,12 +253,13 @@ void BoidMode::doSeperation(boid *b)
 void BoidMode::doRetention(boid *b)
 {
     float retentionDist = 40.0f;
-    if (distance(transform->position, b->transform.position) > float1(retentionDist * 2))
+    retentionDist = retentionDist * retentionDist;
+    if (vector_distance_sqr(transform->position, b->transform.position) > retentionDist * 2)
     {
         transform_position(0.0f, 0.0f, 0.0f, &b->transform);
     }
 
-    if (distance(transform->position, b->transform.position) > float1(retentionDist))
+    if (vector_distance_sqr(transform->position, b->transform.position) > retentionDist)
     {
         float4 dir = b->transform.position - transform->position;
 

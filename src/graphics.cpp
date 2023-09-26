@@ -259,6 +259,15 @@ float vector_distance(float4 v1, float4 v2)
     return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
+float vector_distance_sqr(float4 v1, float4 v2)
+{
+    float dx = v2.x - v1.x;
+    float dy = v2.y - v1.y;
+    float dz = v2.z - v1.z;
+    
+    return dx * dx + dy * dy + dz * dz;
+}
+
 float4x4 matrix_perspective(float fovy, float aspect_ratio, float near_plane, float far_plane) 
 {
 	float4x4 out;

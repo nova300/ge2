@@ -106,6 +106,7 @@ float4 vector_subtract(float4 v1, float4 v2);
 float4 vector_add(float4 v1, float4 v2);
 float4 vector_scale(float4 v1, float s);
 float vector_distance(float4 v1, float4 v2);
+float vector_distance_sqr(float4 v1, float4 v2);
 
 void matrix_rotateY(float4x4* m, float angle);
 float4x4 matrix_multiply(float4x4* m1, float4x4* m2);
