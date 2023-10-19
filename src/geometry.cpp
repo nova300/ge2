@@ -456,10 +456,3 @@ GeoObject_gpu *geo_obj_bindToGpu_and_free(GeoObject *obj)
     free(obj);
     return gobj;
 }
-
-void geo_obj_gpu_updateBuffers(GeoObject_gpu *obj)
-{
-
-}
-
-

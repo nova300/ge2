@@ -683,7 +683,7 @@ void rq_update_buffers(RenderQueue *rq)
     }
 }
 
-void geo_obj_gpu_update_buffers(GeoObject_gpu *gobj)
+void geo_obj_gpu_updateBuffers(GeoObject_gpu *gobj)
 {
     if (gobj->gpuHandle.type == GOBJ_TYPE_UNDEFINED) return;
 
