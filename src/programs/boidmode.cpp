@@ -346,10 +346,10 @@ void BoidMode::destroy()
     boidThread->join();
     delete(boidThread);
     threadStatus = 0;
-    for (int i = 0; i < amount; i++)
+    /*for (int i = 0; i < amount; i++)
     {   
         free(boids[i].localBoidList);
-    }
+    }*/
     rq_free(&renderQueue1);
     freeShaderObject(renderQueue1.gpuHandle.shader);
     glDeleteTextures(1, &renderQueue1.gpuHandle.textureAtlas);

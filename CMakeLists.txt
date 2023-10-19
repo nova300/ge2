@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5.0)
 project(engine VERSION 0.1.0)
 
 #SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
@@ -15,7 +15,7 @@ include_directories(lib/GLFW/include)
 
 add_library(fixmath lib/libfixmath/fix16.c lib/libfixmath/fix16_exp.c lib/libfixmath/fix16_sqrt.c lib/libfixmath/fix16_trig.c lib/libfixmath/fixarray.c lib/libfixmath/fixmatrix.c lib/libfixmath/fixquat.c lib/libfixmath/fixstring.c lib/libfixmath/fixvector2d.c lib/libfixmath/fixvector3d.c lib/libfixmath/fract32.c lib/libfixmath/uint32.c)
 
-add_executable(engine lib/glew.c src/engine.cpp src/graphics.cpp src/shaders.cpp src/geometry.cpp src/event.cpp src/2d.cpp src/legacy/term.cpp src/init.cpp src/skybox.cpp src/programs/boidmode.cpp src/programs/selftest.cpp src/programs/testmode.cpp)
+add_library(engine lib/glew.c src/engine.cpp src/graphics.cpp src/shaders.cpp src/geometry.cpp src/event.cpp src/2d.cpp src/legacy/term.cpp src/init.cpp src/skybox.cpp)
 
 find_library(MATH_LIBRARY m)
 if(MATH_LIBRARY)
@@ -24,9 +24,12 @@ endif()
 
 target_link_libraries(engine OpenGL::GL glfw fixmath)
 
-if(OpenMP_C_FOUND)
+if(OpenMP_CXX_FOUND)
     target_link_libraries(engine OpenMP::OpenMP_CXX )
 endif()
+
+add_executable(program1 src/programs/boidmode.cpp src/programs/selftest.cpp src/programs/testmode.cpp)
+target_link_libraries(program1 engine)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/hlslpp)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/libfixmath)
