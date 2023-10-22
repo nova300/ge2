@@ -60,7 +60,7 @@ void BoidMode::init()
 
     //p1 = particle_new(gobj, 100);
 
-    this->amount = 2000;
+    this->amount = 250;
 
     int len = snprintf(NULL, 0, "%d", this->amount);
     char *result = (char*)malloc(len + 1);

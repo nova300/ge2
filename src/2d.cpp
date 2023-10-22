@@ -60,6 +60,7 @@ const char *fragment_shader_2d_water =
 "void main()\n"
 "{\n"
 "    vec2 offset;\n"
+"    offset.y = 0;\n"
 "    offset.x = cos((time * 0.5) + texCoord.x + texCoord.y * 20.0 * 2.0) * 2.0 * 0.01;\n"
 "    fragColor = texture(colorTexture, texCoord + offset);\n"
 "}\n";

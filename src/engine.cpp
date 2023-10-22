@@ -75,13 +75,13 @@ int main(void)
 
         terminal_render();
         fb_render_hi();
-        fb_render();
+        //fb_render();
 
 
 
 
         glfwSwapBuffers(window);
-        fb_clear();
+        //fb_clear();
         glfwPollEvents();
         if (glfwWindowShouldClose(window)) exitLoop = 1;
     }
