@@ -1,4 +1,5 @@
 #include "boidmode.h"
+#include "hlsl++.h"
 
 #include "libfixmath/fixmath.h"
 
@@ -280,7 +281,7 @@ void BoidMode::update_boids(BoidMode* boidInstance)
         if (boidInstance->threadStatus == 1)
         {
             int i;
-            #pragma omp parallel for num_threads(4)
+            //#pragma omp parallel for num_threads(4)
             for (i = 0; i < boidInstance->amount; i++)
             {
                 boidInstance->updateLocalBoidList(&boids[i]);

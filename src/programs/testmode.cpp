@@ -1,4 +1,5 @@
 #include "testmode.h"
+#include "hlsl++.h"
 
 void TestMode::init()
 {

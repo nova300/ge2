@@ -9,6 +9,8 @@
 
 #include "selftest.h"
 
+#include "hlsl++.h"
+
 double appTime = 0;
 double deltaTime = 0;
 

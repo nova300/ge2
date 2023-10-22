@@ -10,11 +10,11 @@
 #include <GL/glew.h>
 #include "par_shapes.h"
 
-//#include "hlsl++_vector_float_type.h"
-//#include "hlsl++_vector_uint_type.h"
+#include "hlsl++_vector_float_type.h"
+#include "hlsl++_vector_uint_type.h"
 
-#define HLSLPP_FEATURE_TRANSFORM
-#include "hlsl++.h"
+//#define HLSLPP_FEATURE_TRANSFORM
+//#include "hlsl++.h"
 
 #ifdef DO_MMX
 #include <xmmintrin.h>
