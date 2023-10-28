@@ -1,6 +1,7 @@
 #include "graphics.h"
 #include "engine.h"
 #include "stdlib.h"
+#include "stdio.h"
 
 Shader* newShaderObject(const char *vertex_source, const char *fragment_source)
 {
@@ -89,4 +90,58 @@ GLuint loadShaders(const char *vertex_source, const char *fragment_source)
 	glDeleteShader(FragmentShaderID);
 
 	return ProgramID;
+}
+
+char *readfile(FILE *f)
+{
+    // f invalid? fseek() fail?
+    if (f == NULL || fseek(f, 0, SEEK_END))
+    {
+        return NULL;
+    }
+
+    long length = ftell(f);
+    rewind(f);
+    // Did ftell() fail?  Is the length too long?
+    if (length == -1 || (unsigned long)length >= SIZE_MAX)
+    {
+        return NULL;
+    }
+
+    // Convert from long to size_t
+    size_t ulength = (size_t)length;
+    char *buffer = (char*)malloc(ulength + 1);
+    // Allocation failed? Read incomplete?
+    if (buffer == NULL || fread(buffer, 1, ulength, f) != ulength)
+    {
+        free(buffer);
+        return NULL;
+    }
+    buffer[ulength] = '\0'; // Now buffer points to a string
+
+    return buffer;
+}
+
+GLuint loadShadersDisk(const char *path_vertex_source, const char *path_fragment_source)
+{
+    char *vertex_source = NULL;
+    char *fragment_source = NULL;
+
+    FILE *vtx = fopen(path_vertex_source, "r");
+    vertex_source = readfile(vtx);
+    fclose(vtx);
+
+    FILE *frg = fopen(path_fragment_source, "r");
+    fragment_source = readfile(frg);
+    fclose(frg);
+
+
+    GLuint result;
+
+    result = loadShaders(vertex_source, fragment_source);
+
+    free(vertex_source);
+    free(fragment_source);
+
+    return result;
 }

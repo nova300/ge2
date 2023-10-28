@@ -134,6 +134,7 @@ typedef struct
     int ViewID;
 }Shader;
 
+GLuint loadShadersDisk(const char *path_vertex_source, const char *path_fragment_source);
 GLuint loadShaders(const char *vertex_source, const char *fragment_source);
 Shader* newShaderObject(const char *vertex_source, const char *fragment_source);
 void freeShaderObject(Shader *shader);
